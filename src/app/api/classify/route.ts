@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(bytes).toString('base64');
     const mimeType = imageFile.type || 'image/jpeg';
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
     const prompt = `You are an AI assistant for a civic issue reporting system in India.
 Look at this image and classify the civic issue into EXACTLY ONE of these three categories:
