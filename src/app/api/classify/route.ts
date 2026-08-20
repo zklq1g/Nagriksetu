@@ -1,14 +1,14 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Server-side Supabase client with service role (bypasses RLS)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
-// Map AI response to department names in our DB
-const DEPARTMENT_MAP: Record<string, string> = {
-  'Sanitation (Garbage)': 'Sanitation (Garbage)',
-  'Electrical (Streetlights)': 'Electrical (Streetlights)',
-  'PWD (Potholes/Roads)': 'PWD (Potholes/Roads)',
-};
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,17 +22,22 @@ export async function POST(request: NextRequest) {
     // Convert file to base64 for Gemini
     const bytes = await imageFile.arrayBuffer();
     const base64 = Buffer.from(bytes).toString('base64');
-    const mimeType = imageFile.type;
+    const mimeType = imageFile.type || 'image/jpeg';
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const prompt = `You are an AI assistant for a civic issue reporting system in India. 
-    Look at this image and classify the civic issue into EXACTLY ONE of these three departments:
-    - "Sanitation (Garbage)" — for garbage, waste, littering, dirty areas, overflowing bins
-    - "Electrical (Streetlights)" — for broken streetlights, electrical hazards, dark roads, exposed wires
-    - "PWD (Potholes/Roads)" — for potholes, broken roads, damaged footpaths, road cave-ins, construction damage
-    
-    Reply with ONLY the department name, nothing else. No explanation. No punctuation. Just the exact department name from the list above.`;
+    const prompt = `You are an AI assistant for a civic issue reporting system in India.
+Look at this image and classify the civic issue into EXACTLY ONE of these three categories:
+- "Sanitation (Garbage)" — garbage, waste, littering, dirty areas, overflowing bins, open dumping
+- "Electrical (Streetlights)" — broken streetlights, electrical hazards, dark roads, exposed wires, power issues
+- "PWD (Potholes/Roads)" — potholes, broken roads, damaged footpaths, road cave-ins, construction damage, waterlogging on roads
+
+Reply with ONLY one of these three exact strings:
+Sanitation (Garbage)
+Electrical (Streetlights)
+PWD (Potholes/Roads)
+
+No other text. Just the category name.`;
 
     const result = await model.generateContent([
       prompt,
@@ -45,20 +50,33 @@ export async function POST(request: NextRequest) {
     ]);
 
     const rawResponse = result.response.text().trim();
+    console.log('Gemini raw response:', rawResponse);
 
-    // Find the matching department
-    const matchedDept = Object.keys(DEPARTMENT_MAP).find(dept =>
-      rawResponse.toLowerCase().includes(dept.toLowerCase())
-    );
+    // Fetch all departments from DB
+    const { data: departments, error: dbError } = await supabase
+      .from('departments')
+      .select('*');
 
-    if (!matchedDept) {
-      // Default fallback to PWD if AI can't classify
-      return NextResponse.json({ department: 'PWD (Potholes/Roads)', confidence: 'low' });
+    if (dbError || !departments) {
+      return NextResponse.json({ error: 'Could not fetch departments' }, { status: 500 });
     }
 
-    return NextResponse.json({ department: matchedDept, confidence: 'high' });
+    // Find the matching department by checking if the response contains the dept name
+    const matched = departments.find(dept =>
+      rawResponse.toLowerCase().includes(dept.name.toLowerCase()) ||
+      dept.name.toLowerCase().includes(rawResponse.toLowerCase())
+    );
+
+    if (matched) {
+      return NextResponse.json({ department: matched, confidence: 'high' });
+    }
+
+    // Fallback: default to PWD if AI response doesn't match
+    const fallback = departments.find(d => d.name.includes('PWD'));
+    return NextResponse.json({ department: fallback || departments[0], confidence: 'low' });
+
   } catch (error: any) {
-    console.error('Gemini classification error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Classification error:', error?.message || error);
+    return NextResponse.json({ error: error?.message || 'Unknown error' }, { status: 500 });
   }
 }

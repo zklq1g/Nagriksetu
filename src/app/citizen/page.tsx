@@ -48,17 +48,23 @@ export default function CitizenReport() {
       const formData = new FormData();
       formData.append('image', file);
       const res = await fetch('/api/classify', { method: 'POST', body: formData });
-      const { department } = await res.json();
+      const json = await res.json();
 
-      // Match department name to our DB
-      const matched = departments.find(d => d.name === department);
-      if (matched) {
-        setDetectedDept(matched);
+      if (json.error) {
+        console.error('AI error:', json.error);
+        setAiStatus('error');
+        return;
+      }
+
+      // API now returns the full department object from DB directly
+      if (json.department) {
+        setDetectedDept(json.department);
         setAiStatus('done');
       } else {
         setAiStatus('error');
       }
-    } catch {
+    } catch (err) {
+      console.error('Classify fetch error:', err);
       setAiStatus('error');
     }
   };
