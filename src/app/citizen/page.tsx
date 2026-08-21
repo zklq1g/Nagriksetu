@@ -1,10 +1,10 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/utils/supabase/client';
 import { 
   Camera, MapPin, ShieldCheck, Brain, AlertTriangle, 
-  CheckCircle2, Loader2, ThumbsUp, X, ScanLine 
+  CheckCircle2, Loader2, ThumbsUp, X, ScanLine, Aperture 
 } from 'lucide-react';
 
 type ScanStep = {
@@ -22,6 +22,11 @@ export default function CitizenReport() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   
+  // Camera States (WebRTC)
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+
   // AI & Security States
   const [isScanning, setIsScanning] = useState(false);
   const [scanSteps, setScanSteps] = useState<ScanStep[]>([]);
@@ -36,17 +41,61 @@ export default function CitizenReport() {
   // HACKATHON CHEAT: Toggle to force a specific path for the demo video
   const [demoMode, setDemoMode] = useState<'real' | 'force_duplicate'>('real');
 
-  // 1. Handle Live Camera Capture
-  const handleImageCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-      await runRealAIPipeline(file);
+  // Stop camera when unmounting
+  useEffect(() => {
+    return () => stopCamera();
+  }, []);
+
+  // 1. WebRTC Camera Functions
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } // Prefers rear camera on mobile
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+      setIsCameraActive(true);
+      setImagePreview(null);
+      setImageFile(null);
+      setDetectedIssue(null);
+    } catch (err) {
+      console.error(err);
+      alert("Camera access denied or no camera found. Please allow camera permissions.");
     }
   };
 
-  // 2. The Real AI & Security Pipeline (Wrapped in the beautiful illusion)
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const context = canvasRef.current.getContext('2d');
+      if (context) {
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        context.drawImage(videoRef.current, 0, 0);
+        
+        canvasRef.current.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+            stopCamera();
+            await runRealAIPipeline(file);
+          }
+        }, 'image/jpeg', 0.8);
+      }
+    }
+  };
+
+  // 2. The Real AI & Security Pipeline
   const runRealAIPipeline = async (file: File) => {
     setIsScanning(true);
     setDetectedIssue(null);
@@ -58,19 +107,15 @@ export default function CitizenReport() {
     ];
     setScanSteps(steps);
 
-    // Start advancing the UI steps to show "progress"
     const advanceStep = (index: number) => {
       setScanSteps(prev => prev.map((step, idx) => idx === index ? { ...step, status: 'success' } : step));
     };
 
-    // Step 1: Start CV (We actually call the REAL Gemini API here!)
     const formData = new FormData();
     formData.append('image', file);
     
-    // Fire off the API call but don't await it yet so we can animate
     const apiPromise = fetch('/api/classify', { method: 'POST', body: formData });
     
-    // Animate the fake steps while the real API runs
     await new Promise(r => setTimeout(r, 800)); advanceStep(0);
     await new Promise(r => setTimeout(r, 800)); advanceStep(1);
     await new Promise(r => setTimeout(r, 800)); advanceStep(2);
@@ -90,7 +135,6 @@ export default function CitizenReport() {
       }
     } catch (e) {
       console.error(e);
-      // Fallback if API fails during live demo
       setDetectedIssue({
         department_id: 'fallback-uuid-pwd',
         department: 'PWD (Potholes/Roads)',
@@ -113,7 +157,7 @@ export default function CitizenReport() {
     }
   };
 
-  // 4. Real Submit & Duplicate Check via PostGIS
+  // 4. Real Submit
   const handleSubmit = async () => {
     if (!location || !imageFile || !detectedIssue) return;
     setIsSubmitting(true);
@@ -126,7 +170,6 @@ export default function CitizenReport() {
       return;
     }
 
-    // Real PostGIS Duplicate Check
     const { data: duplicates } = await supabase.rpc('find_nearby_issues', { 
       lat: location.lat, 
       lng: location.lng, 
@@ -140,12 +183,10 @@ export default function CitizenReport() {
       return;
     }
 
-    // Upload Image
     const fileName = `${Date.now()}-${imageFile.name}`;
     await supabase.storage.from('issues').upload(fileName, imageFile);
     const { data: { publicUrl } } = supabase.storage.from('issues').getPublicUrl(fileName);
 
-    // Save New Ticket
     const { data, error } = await supabase.from('issues').insert({
       department_id: detectedIssue.department_id,
       image_url: publicUrl,
@@ -180,7 +221,6 @@ export default function CitizenReport() {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white p-4 flex flex-col items-center font-sans pb-20">
       
-      {/* HACKATHON DEMO TOGGLE */}
       <div className="fixed top-4 right-4 bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 z-50">
         <span>Demo:</span>
         <select 
@@ -199,28 +239,67 @@ export default function CitizenReport() {
 
         <div className="bg-[#1e293b] border border-slate-700 rounded-2xl p-5 shadow-2xl space-y-6">
           
-          {/* 1. Live Camera Input */}
+          {/* 1. Live Camera Input (WebRTC) */}
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">1. Capture Defect (Live Only)</label>
-            <label className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-600 rounded-xl cursor-pointer bg-slate-800/50 hover:bg-slate-800 transition-all overflow-hidden group">
-              {imagePreview ? (
+            
+            <div className="relative flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-slate-600 rounded-xl bg-slate-800/50 overflow-hidden group">
+              
+              {/* Video Element for Live Camera */}
+              <video 
+                ref={videoRef} 
+                className={`absolute inset-0 w-full h-full object-cover ${isCameraActive ? 'block' : 'hidden'}`} 
+                playsInline 
+                muted 
+              />
+              <canvas ref={canvasRef} className="hidden" />
+
+              {/* Preview Image after capture */}
+              {imagePreview && (
                 <img src={imagePreview} alt="Captured" className="absolute inset-0 w-full h-full object-cover opacity-80" />
-              ) : (
-                <div className="flex flex-col items-center text-slate-500 group-hover:text-blue-400 transition-colors z-10">
+              )}
+              
+              {/* Default State (Click to open camera) */}
+              {!isCameraActive && !imagePreview && (
+                <button onClick={startCamera} className="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-blue-400 transition-colors z-10">
                   <Camera size={40} className="mb-2" />
                   <span className="text-sm font-semibold">Tap to Open Camera</span>
                   <span className="text-[10px] text-red-400 mt-1 flex items-center gap-1">
-                    <ShieldCheck size={10} /> Gallery uploads disabled
+                    <ShieldCheck size={10} /> File picker disabled (WebRTC active)
                   </span>
+                </button>
+              )}
+
+              {/* Capture Button (When camera is active) */}
+              {isCameraActive && (
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center z-20">
+                  <button 
+                    onClick={capturePhoto} 
+                    className="w-14 h-14 bg-white rounded-full flex items-center justify-center border-4 border-slate-300 hover:scale-105 transition-transform"
+                  >
+                    <Aperture size={24} className="text-slate-900" />
+                  </button>
+                  <button 
+                    onClick={stopCamera} 
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
               )}
-              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageCapture} />
+
               {imagePreview && (
                 <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-green-400 flex items-center gap-1 z-10">
                   <CheckCircle2 size={12} /> LIVE CAPTURE VERIFIED
                 </div>
               )}
-            </label>
+              
+              {imagePreview && !isScanning && (
+                <button onClick={startCamera} className="absolute top-3 right-3 bg-black/70 text-white px-2 py-1 rounded text-[10px] font-bold z-10 hover:bg-black">
+                  RETAKE
+                </button>
+              )}
+            </div>
           </div>
 
           {/* 2. AI & Security Scanning Pipeline */}
