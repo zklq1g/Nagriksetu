@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    // Convert file to base64 for Gemini
     const bytes = await imageFile.arrayBuffer();
     const base64 = Buffer.from(bytes).toString('base64');
     const mimeType = imageFile.type || 'image/jpeg';
@@ -28,16 +27,17 @@ export async function POST(request: NextRequest) {
 
     const prompt = `You are an AI assistant for a civic issue reporting system in India.
 Look at this image and classify the civic issue into EXACTLY ONE of these three categories:
-- "Sanitation (Garbage)" — garbage, waste, littering, dirty areas, overflowing bins, open dumping
-- "Electrical (Streetlights)" — broken streetlights, electrical hazards, dark roads, exposed wires, power issues
-- "PWD (Potholes/Roads)" — potholes, broken roads, damaged footpaths, road cave-ins, construction damage, waterlogging on roads
+- "Sanitation (Garbage)"
+- "Electrical (Streetlights)"
+- "PWD (Potholes/Roads)"
 
-Reply with ONLY one of these three exact strings:
-Sanitation (Garbage)
-Electrical (Streetlights)
-PWD (Potholes/Roads)
+Also, determine a severity score from 1 to 100 based on the visual damage or hazard level.
 
-No other text. Just the category name.`;
+Respond ONLY with a valid JSON object in this exact format:
+{
+  "category": "category name here",
+  "severity": 85
+}`;
 
     const result = await model.generateContent([
       prompt,
@@ -49,8 +49,13 @@ No other text. Just the category name.`;
       },
     ]);
 
-    const rawResponse = result.response.text().trim();
-    console.log('Gemini raw response:', rawResponse);
+    const rawResponse = result.response.text().trim().replace(/```json/g, '').replace(/```/g, '');
+    let parsed;
+    try {
+      parsed = JSON.parse(rawResponse);
+    } catch (e) {
+      parsed = { category: rawResponse, severity: 50 }; // fallback
+    }
 
     // Fetch all departments from DB
     const { data: departments, error: dbError } = await supabase
@@ -61,19 +66,17 @@ No other text. Just the category name.`;
       return NextResponse.json({ error: 'Could not fetch departments' }, { status: 500 });
     }
 
-    // Find the matching department by checking if the response contains the dept name
     const matched = departments.find(dept =>
-      rawResponse.toLowerCase().includes(dept.name.toLowerCase()) ||
-      dept.name.toLowerCase().includes(rawResponse.toLowerCase())
+      parsed.category.toLowerCase().includes(dept.name.toLowerCase()) ||
+      dept.name.toLowerCase().includes(parsed.category.toLowerCase())
     );
 
     if (matched) {
-      return NextResponse.json({ department: matched, confidence: 'high' });
+      return NextResponse.json({ department: matched, severity: parsed.severity, confidence: 'high' });
     }
 
-    // Fallback: default to PWD if AI response doesn't match
     const fallback = departments.find(d => d.name.includes('PWD'));
-    return NextResponse.json({ department: fallback || departments[0], confidence: 'low' });
+    return NextResponse.json({ department: fallback || departments[0], severity: parsed.severity || 50, confidence: 'low' });
 
   } catch (error: any) {
     console.error('Classification error:', error?.message || error);
