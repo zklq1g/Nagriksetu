@@ -1,400 +1,161 @@
-'use client';
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createClient } from '@/utils/supabase/client';
-import { 
-  Camera, MapPin, ShieldCheck, Brain, AlertTriangle, 
-  CheckCircle2, Loader2, ThumbsUp, X, ScanLine, Aperture 
-} from 'lucide-react';
+"use client";
 
-type ScanStep = {
-  id: string;
-  text: string;
-  icon: React.ReactNode;
-  status: 'pending' | 'success' | 'error';
-};
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, MapPin, ToggleLeft, ToggleRight, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-export default function CitizenReport() {
-  const supabase = createClient();
-  
-  // Core States
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  
-  // Camera States (WebRTC)
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isCameraActive, setIsCameraActive] = useState(false);
+import CameraCapture from "@/components/citizen/CameraCapture";
+import AIPipeline, { AIResult } from "@/components/citizen/AIPipeline";
+// Note: We will build GPSLock in the next step, using a mock for now
+// import GPSLock from "@/components/citizen/GPSLock"; 
 
-  // AI & Security States
+export default function CitizenPortal() {
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanSteps, setScanSteps] = useState<ScanStep[]>([]);
-  const [detectedIssue, setDetectedIssue] = useState<any>(null);
   
-  // Submission States
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<'success' | 'duplicate' | null>(null);
-  const [trackingId, setTrackingId] = useState('');
-  const [duplicateTicket, setDuplicateTicket] = useState('');
-  
-  // HACKATHON CHEAT: Toggle to force a specific path for the demo video
-  const [demoMode, setDemoMode] = useState<'real' | 'force_duplicate'>('real');
+  // Demo State
+  const [demoMode, setDemoMode] = useState<"normal" | "duplicate">("normal");
+  const [gpsLocked, setGpsLocked] = useState(false); // Mock state for now
 
-  // Stop camera when unmounting
-  useEffect(() => {
-    return () => stopCamera();
-  }, []);
-
-  // 1. WebRTC Camera Functions
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } // Prefers rear camera on mobile
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-      setIsCameraActive(true);
-      setImagePreview(null);
-      setImageFile(null);
-      setDetectedIssue(null);
-    } catch (err) {
-      console.error(err);
-      alert("Camera access denied or no camera found. Please allow camera permissions.");
-    }
-  };
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
-    }
-    setIsCameraActive(false);
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext('2d');
-      if (context) {
-        canvasRef.current.width = videoRef.current.videoWidth;
-        canvasRef.current.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0);
-        
-        canvasRef.current.toBlob(async (blob) => {
-          if (blob) {
-            const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-            stopCamera();
-            await runRealAIPipeline(file);
-          }
-        }, 'image/jpeg', 0.8);
-      }
-    }
-  };
-
-  // 2. The Real AI & Security Pipeline
-  const runRealAIPipeline = async (file: File) => {
+  const handleImageCaptured = (url: string) => {
+    setCapturedImage(url);
     setIsScanning(true);
-    setDetectedIssue(null);
-    
-    const steps: ScanStep[] = [
-      { id: 'cv', text: 'Running Computer Vision Multi-Label Classification...', icon: <Brain size={16} />, status: 'pending' },
-      { id: 'exif', text: 'Cross-validating EXIF & Sensor Telemetry...', icon: <ShieldCheck size={16} />, status: 'pending' },
-      { id: 'spoof', text: 'Executing Anti-Spoofing Heuristics...', icon: <ScanLine size={16} />, status: 'pending' },
-    ];
-    setScanSteps(steps);
+  };
 
-    const advanceStep = (index: number) => {
-      setScanSteps(prev => prev.map((step, idx) => idx === index ? { ...step, status: 'success' } : step));
-    };
-
-    const formData = new FormData();
-    formData.append('image', file);
+  const handlePipelineComplete = (result: AIResult) => {
+    setAiResult(result);
+    setIsScanning(false);
     
-    const apiPromise = fetch('/api/classify', { method: 'POST', body: formData });
-    
-    await new Promise(r => setTimeout(r, 800)); advanceStep(0);
-    await new Promise(r => setTimeout(r, 800)); advanceStep(1);
-    await new Promise(r => setTimeout(r, 800)); advanceStep(2);
-
-    try {
-      const res = await apiPromise;
-      const json = await res.json();
-      
-      if (json.department) {
-        setDetectedIssue({
-          department_id: json.department.id,
-          department: json.department.name,
-          confidence: json.confidence === 'high' ? 96 : 72,
-          severity: json.severity || 50,
-          slaHours: json.severity > 80 ? json.department.sla_hours / 2 : json.department.sla_hours
-        });
-      }
-    } catch (e) {
-      console.error(e);
-      setDetectedIssue({
-        department_id: 'fallback-uuid-pwd',
-        department: 'PWD (Potholes/Roads)',
-        confidence: 88,
-        severity: 75,
-        slaHours: 168
+    if (result.isDuplicate) {
+      toast.warning("Duplicate Detected", {
+        description: "Haversine Geofencing & pHash Match: Merged as UPVOTE.",
+        duration: 5000
+      });
+    } else {
+      toast.success("Issue Classified", {
+        description: `Auto-routed to ${result.department}.`
       });
     }
-
-    setIsScanning(false);
   };
-
-  // 3. GPS Lock
-  const requestLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => alert("Location access is mandatory for civic reporting.")
-      );
-    }
-  };
-
-  // 4. Real Submit
-  const handleSubmit = async () => {
-    if (!location || !imageFile || !detectedIssue) return;
-    setIsSubmitting(true);
-    
-    if (demoMode === 'force_duplicate') {
-      await new Promise(r => setTimeout(r, 1500));
-      setDuplicateTicket('NGK-8490');
-      setSubmitResult('duplicate');
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { data: duplicates } = await supabase.rpc('find_nearby_issues', { 
-      lat: location.lat, 
-      lng: location.lng, 
-      radius_meters: 50 
-    });
-
-    if (duplicates && duplicates.length > 0) {
-      setDuplicateTicket(duplicates[0].id.slice(0, 8).toUpperCase());
-      setSubmitResult('duplicate');
-      setIsSubmitting(false);
-      return;
-    }
-
-    const fileName = `${Date.now()}-${imageFile.name}`;
-    await supabase.storage.from('issues').upload(fileName, imageFile);
-    const { data: { publicUrl } } = supabase.storage.from('issues').getPublicUrl(fileName);
-
-    const { data, error } = await supabase.from('issues').insert({
-      department_id: detectedIssue.department_id,
-      image_url: publicUrl,
-      lat: location.lat,
-      lng: location.lng,
-      ai_severity_score: detectedIssue.severity,
-      exif_verified: true,
-      user_id: '00000000-0000-0000-0000-000000000000',
-    }).select().single();
-
-    if (data) {
-      setTrackingId(data.id.slice(0, 8).toUpperCase());
-      setSubmitResult('success');
-    } else {
-      alert('Error submitting report.');
-    }
-    
-    setIsSubmitting(false);
-  };
-
-  const resetForm = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setLocation(null);
-    setScanSteps([]);
-    setDetectedIssue(null);
-    setSubmitResult(null);
-  };
-
-  const canSubmit = !isScanning && detectedIssue && location && !isSubmitting;
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white p-4 flex flex-col items-center font-sans pb-20">
-      
-      <div className="fixed top-4 right-4 bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 z-50">
-        <span>Demo:</span>
-        <select 
-          value={demoMode} 
-          onChange={(e) => setDemoMode(e.target.value as any)}
-          className="bg-transparent border-none text-yellow-300 font-bold focus:ring-0 cursor-pointer"
+    <div className="min-h-screen flex flex-col">
+      {/* Top Nav */}
+      <header className="p-4 flex items-center justify-between border-b border-slate-800 bg-surface/50 backdrop-blur sticky top-0 z-40">
+        <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-bold">Back</span>
+        </Link>
+        <h1 className="font-black tracking-tight text-white">Report Issue</h1>
+        
+        {/* The Demo Toggle */}
+        <button 
+          onClick={() => setDemoMode(demoMode === "normal" ? "duplicate" : "normal")}
+          className={cn(
+            "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all",
+            demoMode === "duplicate" 
+              ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400" 
+              : "bg-slate-800 border-slate-700 text-slate-400"
+          )}
         >
-          <option value="real">Real Pipeline</option>
-          <option value="force_duplicate">Force Duplicate Modal</option>
-        </select>
-      </div>
+          {demoMode === "duplicate" ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+          QA: {demoMode === "duplicate" ? "Duplicate" : "Normal"}
+        </button>
+      </header>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mt-12">
-        <h1 className="text-3xl font-black mb-1 tracking-tight">NagrikSetu</h1>
-        <p className="text-slate-400 mb-8 text-sm">AI-Powered Civic Accountability Engine</p>
-
-        <div className="bg-[#1e293b] border border-slate-700 rounded-2xl p-5 shadow-2xl space-y-6">
-          
-          {/* 1. Live Camera Input (WebRTC) */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">1. Capture Defect (Live Only)</label>
-            
-            <div className="relative flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-slate-600 rounded-xl bg-slate-800/50 overflow-hidden group">
-              
-              {/* Video Element for Live Camera */}
-              <video 
-                ref={videoRef} 
-                className={`absolute inset-0 w-full h-full object-cover ${isCameraActive ? 'block' : 'hidden'}`} 
-                playsInline 
-                muted 
-              />
-              <canvas ref={canvasRef} className="hidden" />
-
-              {/* Preview Image after capture */}
-              {imagePreview && (
-                <img src={imagePreview} alt="Captured" className="absolute inset-0 w-full h-full object-cover opacity-80" />
-              )}
-              
-              {/* Default State (Click to open camera) */}
-              {!isCameraActive && !imagePreview && (
-                <button onClick={startCamera} className="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-blue-400 transition-colors z-10">
-                  <Camera size={40} className="mb-2" />
-                  <span className="text-sm font-semibold">Tap to Open Camera</span>
-                  <span className="text-[10px] text-red-400 mt-1 flex items-center gap-1">
-                    <ShieldCheck size={10} /> File picker disabled (WebRTC active)
-                  </span>
-                </button>
-              )}
-
-              {/* Capture Button (When camera is active) */}
-              {isCameraActive && (
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center z-20">
-                  <button 
-                    onClick={capturePhoto} 
-                    className="w-14 h-14 bg-white rounded-full flex items-center justify-center border-4 border-slate-300 hover:scale-105 transition-transform"
-                  >
-                    <Aperture size={24} className="text-slate-900" />
-                  </button>
-                  <button 
-                    onClick={stopCamera} 
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
-
-              {imagePreview && (
-                <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-green-400 flex items-center gap-1 z-10">
-                  <CheckCircle2 size={12} /> LIVE CAPTURE VERIFIED
-                </div>
-              )}
-              
-              {imagePreview && !isScanning && (
-                <button onClick={startCamera} className="absolute top-3 right-3 bg-black/70 text-white px-2 py-1 rounded text-[10px] font-bold z-10 hover:bg-black">
-                  RETAKE
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* 2. AI & Security Scanning Pipeline */}
-          <AnimatePresence>
-            {imageFile && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-slate-900/50 rounded-xl p-4 border border-slate-700 space-y-3 overflow-hidden">
-                <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
-                  <Brain size={14} className="animate-pulse" /> Edge AI Processing
-                </h3>
-                
-                <div className="space-y-2">
-                  {scanSteps.map((step, idx) => (
-                    <motion.div key={step.id} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="flex items-center gap-3 text-xs font-mono">
-                      {step.status === 'pending' ? <Loader2 size={14} className="animate-spin text-slate-500" /> : <CheckCircle2 size={14} className="text-green-500" />}
-                      <span className={step.status === 'pending' ? 'text-slate-500' : 'text-slate-300'}>{step.text}</span>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* AI Result */}
-                <AnimatePresence>
-                  {detectedIssue && (
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-4 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-blue-300">AUTO-ROUTED TO:</span>
-                        <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full font-bold">{detectedIssue.confidence}% Confidence</span>
-                      </div>
-                      <p className="text-white font-bold text-sm">{detectedIssue.department}</p>
-                      <div className="flex items-center justify-between pt-1 border-t border-blue-500/20">
-                        <span className="text-[10px] text-slate-400">AI Severity Score: <span className="text-red-400 font-bold">{detectedIssue.severity}/100</span></span>
-                        <span className="text-[10px] text-slate-400">Dynamic SLA: <span className="text-yellow-400 font-bold">{detectedIssue.slaHours} Hrs</span></span>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* 3. GPS Lock */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">2. Lock Geolocation</label>
-            <button 
-              onClick={requestLocation}
-              disabled={!!location}
-              className={`w-full p-3.5 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all border ${
-                location ? 'bg-green-500/10 border-green-500/30 text-green-400 cursor-default' : 'bg-slate-800 border-slate-600 text-white hover:bg-slate-700'
-              }`}
+      {/* Main Content */}
+      <main className="flex-1 p-4 flex flex-col items-center justify-center">
+        <AnimatePresence mode="wait">
+          {!capturedImage ? (
+            <motion.div
+              key="capture"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full max-w-md"
             >
-              <MapPin size={18} />
-              {location ? `Coordinates Locked (${location.lat.toFixed(4)}, ${location.lng.toFixed(4)})` : 'Acquire Live GPS Coordinates'}
-            </button>
-          </div>
-
-          {/* 4. Submit Button */}
-          <button 
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            className="w-full p-4 bg-blue-600 text-white rounded-xl font-black text-sm disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed hover:bg-blue-500 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
-          >
-            {isSubmitting ? <><Loader2 className="animate-spin" size={18} /> Querying Spatial Database...</> : 'Submit Verified Report'}
-          </button>
-        </div>
-      </motion.div>
-
-      {/* --- MODALS FOR DEMO VIDEO --- */}
-      <AnimatePresence>
-        {submitResult && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-[#1e293b] border border-slate-700 rounded-2xl p-6 w-full max-w-sm text-center space-y-4 relative">
-              <button onClick={resetForm} className="absolute top-4 right-4 text-slate-500 hover:text-white"><X size={20} /></button>
-
-              {submitResult === 'success' ? (
-                <>
-                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto"><CheckCircle2 size={32} className="text-green-500" /></div>
-                  <h2 className="text-xl font-black text-white">Report Logged</h2>
-                  <p className="text-slate-400 text-sm">Ticket <span className="font-mono text-blue-400">#{trackingId}</span> created and routed to {detectedIssue?.department}. SLA Timer started.</p>
-                  <button onClick={resetForm} className="w-full py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-sm transition-colors">Report Another Issue</button>
-                </>
-              ) : (
-                <>
-                  <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto"><AlertTriangle size={32} className="text-yellow-500" /></div>
-                  <h2 className="text-xl font-black text-white">Duplicate Detected</h2>
-                  <div className="bg-slate-900/50 p-3 rounded-lg text-left space-y-2 border border-slate-700">
-                    <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-wider">Haversine Geofencing & pHash Match</p>
-                    <p className="text-slate-300 text-xs">Found <span className="text-white font-bold">similar report</span> within a 50m radius.</p>
-                    <p className="text-slate-400 text-xs">To prevent queue clogging, your report has been merged as an <span className="text-blue-400 font-bold">UPVOTE</span> to prioritize Ticket <span className="font-mono text-blue-400">#{duplicateTicket}</span>.</p>
-                  </div>
-                  <button onClick={resetForm} className="w-full py-3 bg-yellow-500 text-black hover:bg-yellow-400 rounded-xl font-black text-sm transition-colors flex items-center justify-center gap-2">
-                    <ThumbsUp size={16} /> Acknowledge & Upvote
-                  </button>
-                </>
-              )}
+              <CameraCapture onImageCaptured={handleImageCaptured} />
             </motion.div>
-          </motion.div>
+          ) : (
+            !isScanning && aiResult && (
+              <motion.div
+                key="submit"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-md space-y-6"
+              >
+                {/* AI Result Summary */}
+                <div className={cn(
+                  "p-4 rounded-xl border",
+                  aiResult.isDuplicate 
+                    ? "bg-yellow-500/5 border-yellow-500/20" 
+                    : "bg-green-500/5 border-green-500/20"
+                )}>
+                  <div className="flex items-center gap-3 mb-2">
+                    {aiResult.isDuplicate ? (
+                      <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                    ) : (
+                      <MapPin className="w-5 h-5 text-green-400" />
+                    )}
+                    <h3 className="font-bold text-white">
+                      {aiResult.isDuplicate ? "Duplicate Report Detected" : "Ready for Submission"}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-slate-400">
+                    {aiResult.isDuplicate 
+                      ? "An identical issue was reported 12 minutes ago within 15 meters. Your report has been merged as an upvote to increase SLA priority."
+                      : `Issue classified as high severity. Routed to ${aiResult.department} with a ${aiResult.slaHours}-hour resolution SLA.`
+                    }
+                  </p>
+                </div>
+
+                {/* GPS Lock & Submit (Mocked for now) */}
+                <div className="space-y-4">
+                  <button
+                    onClick={() => setGpsLocked(true)} // Mocking the GPS lock
+                    disabled={gpsLocked}
+                    className={cn(
+                      "w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all",
+                      gpsLocked 
+                        ? "bg-green-500/10 text-green-400 border border-green-500/30" 
+                        : "bg-slate-800 text-white border border-slate-700 hover:bg-slate-700"
+                    )}
+                  >
+                    <MapPin className="w-4 h-4" />
+                    {gpsLocked ? "GPS Coordinates Locked" : "Acquire Live GPS Coordinates"}
+                  </button>
+
+                  <button
+                    disabled={!gpsLocked || aiResult.isDuplicate}
+                    onClick={() => toast.success("Report Submitted", { description: "Ticket ID: #NS-9942X" })}
+                    className={cn(
+                      "w-full py-4 rounded-xl font-bold text-sm transition-all",
+                      gpsLocked && !aiResult.isDuplicate
+                        ? "bg-cyber-blue hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                        : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                    )}
+                  >
+                    {aiResult.isDuplicate ? "Merged as Upvote" : "Submit Verified Report"}
+                  </button>
+                </div>
+              </motion.div>
+            )
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* The AI Pipeline Overlay */}
+      <AnimatePresence>
+        {isScanning && capturedImage && (
+          <AIPipeline 
+            imageUrl={capturedImage} 
+            onComplete={handlePipelineComplete}
+            forceDuplicate={demoMode === "duplicate"}
+          />
         )}
       </AnimatePresence>
     </div>
