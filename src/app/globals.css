@@ -1,36 +1,79 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Core palette */
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+
+  /* AI & Action Accents */
+  --color-cyber-cyan: #22d3ee;
+  --color-cyber-blue: #3b82f6;
+
+  /* Fonts */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), monospace;
+
+  /* Custom shadows */
+  --shadow-cyber-glow: 0 0 15px rgba(34, 211, 238, 0.15);
+  --shadow-card-hover: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+
+  /* Custom animations */
+  --animate-scan-line: scan 2s linear infinite;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-fade-in: fadeIn 0.5s ease-out forwards;
+
+  /* Keyframes */
+  @keyframes scan {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(100%); }
+  }
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+}
 
 @layer base {
   body {
     @apply bg-background text-slate-200 antialiased;
-    /* Prevent overscroll bounce on mobile PWA */
-    overscroll-behavior: none; 
+    overscroll-behavior: none;
   }
 
-  /* Custom Scrollbar for Admin Dashboard */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700 rounded-full hover:bg-slate-600 transition-colors;
+    background: #334155;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
   }
 }
 
 @layer utilities {
   /* Glassmorphism for Modals & Overlays */
   .glass {
-    @apply bg-surface/80 backdrop-blur-xl border border-white/10 shadow-2xl;
+    background: rgb(30 41 59 / 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   }
 
   /* AI Scanning Grid Background */
   .ai-grid {
-    background-image: 
+    background-image:
       linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
       linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
     background-size: 20px 20px;
@@ -38,7 +81,10 @@
 
   /* Text gradient for headings */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to right, #ffffff, #94a3b8);
   }
 }
 
@@ -56,7 +102,6 @@
 }
 .leaflet-popup-tip {
   background: #1e293b !important;
-  border: 1px solid #334155 !important;
   box-shadow: none !important;
 }
 .leaflet-control-zoom a {

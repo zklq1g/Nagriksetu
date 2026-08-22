@@ -1,0 +1,439 @@
+This is a highly professional approach. Creating a Markdown (`.md`) specification for each page does three things:
+1. It acts as your **development checklist** so you don't get lost in the code.
+2. It provides the **exact script** for your demo video.
+3. You can combine them into your final GitHub `README.md` to show the judges your system design skills.
+
+Here is the exact folder structure and the content for each Markdown file. Create a `/docs` folder in your project and create these 5 files.
+
+---
+
+### 📁 Project Structure
+```text
+nagrik-setu/
+├── docs/
+│   ├── 01-Landing-Page.md
+│   ├── 02-Citizen-Portal.md
+│   ├── 03-Department-Portal.md
+│   ├── 04-Admin-Dashboard.md
+│   └── 05-Public-Map.md
+```
+
+---
+
+### 📄 `docs/01-Landing-Page.md`
+```markdown
+# 01. Landing Page & Role Selector
+**Route:** `/`
+**Target User:** All Users (Hackathon Demo Entry Point)
+
+## Core Objective
+Provide an immediate, frictionless entry point into the ecosystem. For the hackathon demo, this bypasses complex authentication (OAuth/OTP) to allow judges to instantly test all three user personas.
+
+## Key UI Components
+- **Hero Section:** "NagrikSetu: AI-Powered Civic Accountability Engine"
+- **Role Cards (3):**
+  1. 📱 **Report an Issue** (Routes to `/citizen`)
+  2. 🛠️ **Field Worker Portal** (Routes to `/department`)
+  3. 🏛️ **Admin Command Center** (Routes to `/admin`)
+- **Public Access:** A background interactive map snippet showing live city health.
+
+## Hackathon Strategy
+- Keep it visually stunning using Framer Motion fade-ins.
+- Use a dark, high-contrast theme (Slate/Blue) to establish a "GovTech SaaS" aesthetic immediately.
+```
+
+---
+
+### 📄 `docs/02-Citizen-Portal.md`
+```markdown
+# 02. Citizen Portal
+**Route:** `/citizen`
+**Target User:** General Public
+**Device:** Mobile (PWA)
+
+## Core Objective
+Enable citizens to report civic issues with zero friction while enforcing strict anti-spam and data integrity measures.
+
+## Key Features
+1. **Live Camera Enforcement:** `<input capture="environment">` restricts uploads to live rear-camera only. No gallery access.
+2. **AI & Security Pipeline (The Illusion):** 
+   - Triggers a 3-step Framer Motion animation upon photo capture.
+   - Steps: "Computer Vision Classification" → "EXIF Telemetry Validation" → "Anti-Spoofing Heuristics".
+3. **Auto-Routing:** Mock AI assigns the department, confidence score, and severity.
+4. **Dynamic SLA Generation:** High severity issues automatically get expedited SLA timers.
+5. **GPS Lock:** Submit button remains disabled until `navigator.geolocation` successfully locks coordinates.
+6. **Spatial Duplicate Check:** Simulates a PostGIS Haversine query. If a duplicate is found, prompts user to "Upvote" instead of creating a new ticket.
+
+## Demo Controls (Hidden in Production)
+- **Demo Mode Toggle:** Top-right dropdown to switch between "Normal Submit" and "Simulate Duplicate" to easily record both happy-path and edge-case scenarios for the video.
+```
+
+---
+
+### 📄 `docs/03-Department-Portal.md`
+```markdown
+# 03. Department Field-Worker Portal
+**Route:** `/department`
+**Target User:** Municipal Field Workers (Sanitation, PWD, Electrical)
+**Device:** Mobile
+
+## Core Objective
+A dead-simple task queue for workers on the ground. Focuses entirely on execution and cryptographic/GPS proof-of-work.
+
+## Key Features
+1. **Filtered Task Queue:** Workers only see tickets assigned to their specific department, sorted by SLA urgency (Oldest first).
+2. **Visual SLA Indicators:** Cards feature thick left borders (Red = Overdue, Yellow = Urgent, Green = On Track).
+3. **On-Site GPS Verification (Haversine):**
+   - When "Start Resolution" is clicked, app grabs worker's live GPS.
+   - Calculates distance to the citizen's reported coordinates.
+   - If distance > 100 meters, the "Confirm" button is physically disabled with a red warning.
+4. **Mandatory Proof-of-Work:** Worker must capture a live "After" photo to close the ticket.
+
+## Demo Controls
+- **Department Switcher:** Top-right dropdown to instantly switch between PWD, Sanitation, and Electrical views.
+- **GPS Override:** If the worker is >100m away (e.g., recording from home), a tiny "[Demo Override: Fake GPS Match]" button appears to turn the verification green for the video recording.
+```
+
+---
+
+### 📄 `docs/04-Admin-Dashboard.md`
+```markdown
+# 04. Admin Command Center
+**Route:** `/admin`
+**Target User:** Municipal Commissioners / Nodal Officers
+**Device:** Desktop / Tablet
+
+## Core Objective
+The "God View" for oversight. Handles AI failures, resolves jurisdictional disputes, and monitors systemic accountability.
+
+## Key Features
+1. **The "Unassigned" Queue (AI Fallback):**
+   - Tickets where AI confidence was < 80% are held here.
+   - Admin views the photo and manually routes it to the correct department, preventing the "Ping-Pong" effect.
+2. **Master Data Table:** View all city tickets with filters for Status, Department, and SLA Compliance.
+3. **CV Closure Verification (The Illusion):** 
+   - When an admin reviews a closed ticket, a mock "Computer Vision Structural Comparison" runs to verify the Before/After photos match.
+4. **System Interoperability:** 
+   - A "Sync to CPGRAMS" button that simulates pushing unresolved data to the central government database via REST API.
+
+## Hackathon Strategy
+- Use `shadcn/ui` Data Tables for a highly professional, enterprise-grade look.
+- Emphasize the "Human-in-the-loop" design in the README to show judges we understand AI limitations.
+```
+
+---
+
+### 📄 `docs/05-Public-Map.md`
+```markdown
+# 05. Public Transparency Dashboard
+**Route:** `/public` (or `/`)
+**Target User:** Journalists, NGOs, General Public
+**Device:** Desktop / Mobile
+
+## Core Objective
+Radical transparency. Turning civic data into public accountability through visualization and gamification.
+
+## Key Features
+1. **Live City Heatmap:** 
+   - Full-screen interactive map (React-Leaflet / Mapbox).
+   - Pins color-coded by status (Red = Open, Green = Resolved) or Department.
+2. **Department Leaderboard:** 
+   - Sidebar ranking departments by "Resolution Rate" and "Average SLA Time".
+   - Uses public pressure and competitive pride to drive government performance.
+3. **Taxpayer ROI Tracker:** A mock widget showing "Estimated Man-Hours Saved" through early reporting.
+4. **Open Data API Badge:** Indicates that this data is available for researchers via REST endpoints.
+
+## Hackathon Strategy
+- **Pre-Seeded Data:** The map will read from a `mockData.ts` file containing 50 realistic issues around Connaught Place, Delhi, so the map looks incredibly active and populated during the demo.
+```
+
+This is the ultimate master context file. You can save this as `PROJECT_CONTEXT.md` in the root of your project. 
+
+If you use AI coding assistants like **Cursor, GitHub Copilot, or Claude**, you can feed this entire document to them, and they will understand exactly what to build, how to fake the complex backend features, and what the UI needs to look like.
+
+Here is the complete, exhaustive blueprint.
+
+***
+
+```markdown
+# PROJECT_CONTEXT.md: NagrikSetu (AI-Powered Civic Accountability Engine)
+
+## 1. Project Overview & Hackathon Context
+*   **Project Name:** NagrikSetu (Citizen Bridge)
+*   **Hackathon:** Frontend Arena (Focus: UI/UX, Performance, Visual Storytelling)
+*   **Theme:** Smart Cities / Viksit Bharat 2026
+*   **Problem Statement:** "The Complaint That Nobody Heard" (Lack of transparency, updates, accountability, and trust in civic reporting).
+*   **Timeframe:** 48 Hours (1-2 person team).
+*   **Core Philosophy:** Don't just build a "reporting tool." Build an **Accountability & Workflow Engine** that enforces deadlines (SLAs), prevents spam, and provides radical public transparency.
+
+---
+
+## 2. The "Architectural Illusion" Strategy (CRITICAL FOR AI CODING)
+We are building a frontend-heavy "Vertical Slice" demo. We cannot build actual Python microservices, train CV models, or integrate real Gov APIs in 48 hours. 
+**Rule for AI Code Generation:** When a feature requires complex backend processing (AI, EXIF, CPGRAMS), build a **beautiful, highly realistic UI loading state** that simulates the process using `setTimeout`, and returns mock JSON data. Document in the code that this represents a production microservice.
+
+### What is REAL (Fully Functional):
+*   Next.js App Router frontend with Tailwind CSS & Framer Motion.
+*   Supabase PostgreSQL database with **PostGIS** enabled for spatial queries.
+*   Supabase Storage for actual image uploads.
+*   Browser `navigator.geolocation` for live GPS locking.
+*   HTML5 `<input capture="environment">` to enforce live camera-only access (no gallery).
+*   Client-side Haversine formula to calculate distance between two GPS coordinates.
+*   React-Leaflet for the public interactive map.
+
+### What is SIMULATED (The Illusion):
+*   **AI Image Classification:** Mocked via a 2-second loading animation returning a hardcoded department and severity score.
+*   **EXIF/Anti-Spoofing Validation:** Mocked via a sequential checklist animation.
+*   **Duplicate Detection (pHash):** Simulated via a "Demo Mode" toggle that forces the duplicate UI flow. (In production, this uses PostGIS `ST_DWithin`).
+*   **Computer Vision Closure Verification:** Mocked via a loading state when an Admin reviews a closed ticket.
+*   **CPGRAMS Interoperability:** A dummy button that triggers a success toast notification.
+
+---
+
+## 3. Tech Stack
+*   **Framework:** Next.js 14 (App Router), TypeScript.
+*   **Styling:** Tailwind CSS, Dark Mode theme (Slate/Blue palette).
+*   **UI Components:** `shadcn/ui` (Tables, Dialogs, Cards, Buttons), `lucide-react` (Icons).
+*   **Animations:** `framer-motion` (Page transitions, scanning sequences, modals).
+*   **Backend/DB:** Supabase (PostgreSQL + PostGIS + Storage + Auth).
+*   **Maps:** `react-leaflet` and `leaflet`.
+*   **Deployment:** Vercel.
+
+---
+
+## 4. Database Schema (Supabase SQL)
+The database must support dynamic SLAs, AI metadata, and spatial queries.
+
+```sql
+-- Enable PostGIS
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+-- Departments Table (Dynamic SLAs)
+CREATE TABLE departments (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  sla_hours INT NOT NULL,
+  color TEXT NOT NULL
+);
+
+-- Issues Table
+CREATE TABLE issues (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users NOT NULL,
+  department_id UUID REFERENCES departments NOT NULL,
+  image_url TEXT NOT NULL,
+  after_image_url TEXT,
+  lat DOUBLE PRECISION NOT NULL,
+  lng DOUBLE PRECISION NOT NULL,
+  status TEXT DEFAULT 'Open' CHECK (status IN ('Open', 'Unassigned', 'In Progress', 'Resolved')),
+  ai_confidence FLOAT DEFAULT 0,
+  ai_severity INT DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  resolved_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Spatial Index for Duplicate Checking
+CREATE INDEX idx_issues_location ON issues USING GIST (geography(ST_SetSRID(ST_MakePoint(lng, lat), 4326)));
+
+-- Row Level Security (RLS)
+ALTER TABLE issues ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read issues" ON issues FOR SELECT USING (true);
+CREATE POLICY "Citizens insert issues" ON issues FOR INSERT WITH CHECK (true); -- Simplified for demo
+CREATE POLICY "Admins update issues" ON issues FOR UPDATE USING (true);
+```
+
+---
+
+## 5. Page-by-Page Specifications
+
+### A. Landing Page (`/`)
+*   **UI:** High-impact dark mode hero section.
+*   **Action:** Three distinct role cards to bypass auth for the demo: "Citizen Portal", "Field Worker Portal", "Admin Command Center".
+
+### B. Citizen Portal (`/citizen`)
+*   **Target:** Mobile PWA.
+*   **Core Logic:** Anti-Spam & Frictionless Reporting.
+*   **Key Features:**
+    1.  **Live Camera Only:** `<input type="file" accept="image/*" capture="environment">`. Explicit UI text: "Gallery uploads disabled".
+    2.  **AI & Security Pipeline (Simulated):** Upon photo capture, trigger a Framer Motion sequence:
+        *   *Step 1:* "Running Computer Vision Multi-Label Classification..." (Wait 800ms) -> Checkmark.
+        *   *Step 2:* "Cross-validating EXIF & Sensor Telemetry..." (Wait 800ms) -> Checkmark.
+        *   *Step 3:* "Executing Anti-Spoofing Heuristics..." (Wait 800ms) -> Checkmark.
+    3.  **Dynamic SLA Injection:** After scanning, display a mock result: "Auto-Routed to PWD", "Confidence: 96%", "Severity: 88/100", "Expedited SLA: 72 Hrs".
+    4.  **GPS Lock:** A button "Acquire Live GPS Coordinates". The final Submit button is `disabled` until this succeeds.
+    5.  **Demo Toggle (Top Right):** A dropdown to switch between "Normal Submit" and "Simulate Duplicate".
+        *   *If Normal:* Show success modal with Ticket ID.
+        *   *If Duplicate:* Show warning modal: "Haversine Geofencing & pHash Match: 2 identical reports within 50m. Merged as UPVOTE."
+
+### C. Department Field-Worker Portal (`/department`)
+*   **Target:** Mobile PWA. Dead-simple task execution.
+*   **Core Logic:** Proof-of-Work & Location Verification.
+*   **Key Features:**
+    1.  **Task Queue:** List of tickets filtered by department. Cards have thick left borders indicating SLA status (Red=Overdue, Yellow=Urgent, Green=On Track).
+    2.  **Haversine GPS Check:** When worker clicks "Start Resolution", grab live GPS. Calculate distance to the ticket's `lat/lng`.
+        *   If distance > 100m: Show Red Warning ("You are X meters away"). Disable submit.
+        *   If distance <= 100m: Show Green Success ("Location Matched").
+    3.  **Demo Override:** If distance > 100m, show a tiny `[Demo Override: Fake GPS Match]` button for the hackathon video recording.
+    4.  **Mandatory Proof:** Worker must use `<input capture="environment">` to take an "After" photo. Ticket cannot be closed without it.
+
+### D. Admin Command Center (`/admin`)
+*   **Target:** Desktop. "God View" oversight.
+*   **Core Logic:** AI Fallback & Systemic Accountability.
+*   **Key Features:**
+    1.  **Unassigned Queue (AI Fallback):** A specific view for tickets where AI Confidence was < 80%. Admin manually assigns these to prevent the "Ping-Pong" jurisdictional effect.
+    2.  **Master Data Table:** `shadcn/ui` table showing all tickets, SLA timers, and Before/After thumbnails.
+    3.  **CV Closure Verification (Simulated):** When Admin clicks a resolved ticket, show a mock loading state: "Running Computer Vision Structural Comparison...". Then show: "✅ Defect Resolved. AI Match Confirmed."
+    4.  **Interoperability Flex:** A "Sync to CPGRAMS" button that triggers a toast: "Syncing 14 unresolved tickets to Central Gov API..."
+
+### E. Public Transparency Dashboard (`/public`)
+*   **Target:** Desktop/Mobile. Radical Transparency.
+*   **Core Logic:** Data Visualization.
+*   **Key Features:**
+    1.  **Live Heatmap:** Full-screen `react-leaflet` map. Red pins for Open, Green for Resolved.
+    2.  **Pre-Seeded Data:** Read from a local `mockData.ts` file containing 50 fake issues around Connaught Place, Delhi, so the map looks highly active.
+    3.  **Leaderboard:** Sidebar ranking departments by resolution rate.
+
+---
+
+## 6. Demo Video Recording Script (The "Golden Path")
+Use this exact flow to record the 3-minute submission video:
+
+1.  **Intro (15s):** Show the Landing Page. Voiceover: "NagrikSetu replaces broken complaint boxes with an AI-powered accountability engine."
+2.  **Citizen Flow (45s):** 
+    *   Open `/citizen` on mobile view. 
+    *   Take a live photo. Show the AI/EXIF scanning animation. 
+    *   Show the Dynamic SLA generation. 
+    *   Lock GPS. Submit. Show Success.
+    *   *Edge Case:* Switch Demo Toggle to "Duplicate". Take another photo. Show the Haversine Geofencing Upvote modal.
+3.  **Department Flow (45s):** 
+    *   Open `/department`. Show the SLA color-coded queue. 
+    *   Click "Start Resolution". Show the GPS Haversine check turning red (because you are at home). 
+    *   Click the `[Demo Override]`. Take a live "After" photo. Close ticket.
+4.  **Admin Flow (30s):** 
+    *   Open `/admin`. Show the "Unassigned" AI fallback queue. 
+    *   Show the Master Table. Click "Sync to CPGRAMS".
+5.  **Public Map (30s):** 
+    *   Open `/public`. Pan around the pre-seeded map of Delhi. Show the Leaderboard.
+6.  **Outro (15s):** "Built for Viksit Bharat. Transparent. Accountable. Inclusive."
+
+---
+
+## 7. Alignment with Evaluation Criteria
+*   **Implementation:** Next.js, Supabase, PostGIS, Leaflet fully integrated.
+*   **Innovation:** "Architectural Illusion" of AI CV routing, EXIF validation, and Haversine anti-spam.
+*   **Usability:** Mobile-first Citizen/Dept views, high-contrast dark mode, zero gallery uploads.
+*   **Scalability:** PostGIS spatial indexing, Supabase Edge Functions architecture (documented).
+*   **Security:** Live camera enforcement, GPS locking, Row Level Security (RLS).
+*   **Real-World Impact:** Solves the "Ping-Pong" bureaucracy problem, enforces SLAs, builds public trust.
+```
+
+***
+
+This is exactly how senior engineers write specifications. When you feed an AI (like Cursor, Copilot, or Claude) highly specific constraints, edge cases, and design rules, it stops writing generic code and starts writing **production-grade, hackathon-winning code**.
+
+Here is **Part 2** of the Master Context. Append these sections to your `PROJECT_CONTEXT.md`. This covers the granular UI/UX rules, edge cases, file structure, and the exact narrative you need for your README to score maximum points.
+
+***
+
+```markdown
+---
+
+## 8. Design System & UI/UX Guidelines (CRITICAL FOR FRONTEND ARENA)
+Since this is a frontend-focused hackathon, the UI must look like a million-dollar GovTech SaaS product. Do not use default browser styles.
+
+*   **Color Palette (Dark Mode "Command Center" Aesthetic):**
+    *   Background: `bg-[#0f172a]` (Slate 900)
+    *   Cards/Surfaces: `bg-[#1e293b]` (Slate 800) with `border border-slate-700`
+    *   Primary Action: `bg-blue-600` (Hover: `bg-blue-500`)
+    *   Success/Resolved: `text-green-400`, `bg-green-500/10`, `border-green-500/30`
+    *   Urgent/Overdue: `text-red-400`, `bg-red-500/10`, `border-red-500/30`
+    *   Text: Primary `text-white`, Secondary `text-slate-400`, Muted `text-slate-500`
+*   **Typography:** Use `font-sans` (Inter or Geist). Headings must be `font-black` or `font-bold` with `tracking-tight`. Monospace (`font-mono`) for Ticket IDs and GPS coordinates.
+*   **Micro-Interactions (Framer Motion):**
+    *   **Modals:** Must slide up from the bottom on mobile (`initial={{ y: "100%" }} animate={{ y: 0 }} type="spring" stiffness={300} damping={30}`).
+    *   **Lists:** Staggered fade-in for task queues (`initial={{ opacity: 0, y: 10 }}`).
+    *   **Loading States:** NEVER use a default browser spinner. Use `lucide-react` `<Loader2 className="animate-spin" />` inside buttons. Use Skeleton loaders (`bg-slate-700 animate-pulse`) for data tables.
+*   **Accessibility (a11y):**
+    *   All inputs must have associated `<label>` tags (can be visually hidden with `sr-only` if needed).
+    *   Focus states must be visible (`focus:ring-2 focus:ring-blue-500`).
+    *   Color contrast must pass WCAG AA (hence the specific slate/blue palette above).
+
+---
+
+## 9. Granular Next.js App Router Architecture
+Maintain a clean, modular file structure. AI should generate components in the correct directories.
+
+```text
+nagrik-setu/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx              # Global fonts, dark mode background, Toaster
+│   │   ├── page.tsx                # Landing Page (Role Selector)
+│   │   ├── citizen/page.tsx        # Citizen Reporting Flow
+│   │   ├── department/page.tsx     # Field Worker Task Queue
+│   │   ├── admin/page.tsx          # Admin Command Center
+│   │   └── public/page.tsx         # Transparency Heatmap
+│   ├── components/
+│   │   ├── ui/                     # shadcn/ui components (button, card, table, dialog)
+│   │   ├── citizen/
+│   │   │   ├── CameraCapture.tsx   # Live camera input with anti-spoof UI
+│   │   │   ├── AIPipeline.tsx      # The simulated scanning animation
+│   │   │   └── GPSLock.tsx         # Geolocation button
+│   │   ├── department/
+│   │   │   ├── TaskCard.tsx        # Individual ticket card with SLA border
+│   │   │   └── ResolutionModal.tsx # Before/After photo & Haversine check
+│   │   └── admin/
+│   │       ├── UnassignedQueue.tsx # AI Fallback routing
+│   │       └── MasterTable.tsx     # shadcn data table
+│   ├── lib/
+│   │   ├── supabase.ts             # Supabase client initialization
+│   │   ├── utils.ts                # cn() helper for tailwind
+│   │   └── haversine.ts            # Distance calculation math
+│   └── data/
+│       └── mockData.ts             # 50 pre-seeded Delhi coordinates for the map
+├── public/
+│   ├── manifest.json               # PWA configuration
+│   └── icons/                      # PWA icons
+├── .env.local                      # Supabase Keys
+└── PROJECT_CONTEXT.md              # This file
+```
+
+---
+
+## 10. Edge Case & Error Handling Matrix
+Amateurs build for the happy path. We build for the real world. Implement these specific UI states:
+
+| Scenario | User Action | System Response (UI) |
+| :--- | :--- | :--- |
+| **Camera Denied** | User blocks camera access | Show red toast: "Camera access is mandatory for verified reporting. Please enable in browser settings." |
+| **GPS Denied** | User blocks location access | Submit button remains `disabled`. Show text: "GPS Lock Required" in red. |
+| **No Network (2G)** | User tries to submit | Show offline indicator. (For demo: Just ensure UI doesn't crash on slow load, use Framer Motion `AnimatePresence` to handle delayed states gracefully). |
+| **Worker too far** | Dept worker >100m from pothole | Red border on modal. Button disabled. Text: "GPS Mismatch: You are X meters away. Move to the reported site." |
+| **Missing Proof** | Admin tries to close without photo | HTML5 validation prevents it. Button disabled until `afterImage` state is populated. |
+| **AI Fails (Low Confidence)** | Citizen uploads blurry photo | Mock AI returns `< 80%` confidence. Ticket routes to `/admin` Unassigned Queue instead of a Department. |
+
+---
+
+## 11. The "Viksit Bharat" Narrative (For README & PPT)
+When generating the `README.md`, use this exact philosophical framing to align with the hackathon judges and Sonam Wangchuk's vision:
+
+*   **From Reactive to Proactive:** "NagrikSetu shifts municipal governance from a reactive complaint-box model to a proactive, AI-routed accountability engine."
+*   **Solving the 'Ping-Pong' Bureaucracy:** "By implementing an AI-confidence threshold with a Human-in-the-Loop (Admin) fallback, we eliminate the jurisdictional ping-pong effect where departments endlessly reject tickets."
+*   **Cryptographic Trust:** "By enforcing live-camera capture and Haversine GPS validation, we restore trust. Citizens know their reports are real; workers know they are held accountable to physical locations."
+*   **Digital Public Infrastructure (DPI):** "Designed to be interoperable. Built on open standards (PostGIS, REST) to eventually sync with national grids like CPGRAMS and Swachhata."
+*   **Inclusivity:** "A mobile-first PWA approach ensures citizens in low-bandwidth, rural areas can participate in civic governance without downloading heavy native apps."
+
+---
+
+## 12. AI Coding Directives (Meta-Rules for Cursor/Copilot)
+When asking the AI to write code for this project, enforce these rules:
+
+1.  **NO CONSOLE LOGS IN PRODUCTION:** Use a mock UI Toast (e.g., `sonner` or a custom fixed div) to show success/error messages instead of `console.log`.
+2.  **MOCK OVER BUILD:** If I ask for "AI Classification", DO NOT write a Python backend. Write a Next.js async function that uses `setTimeout` for 2 seconds and returns a mock JSON object. Add a comment: `// TODO: Replace with Supabase Edge Function calling Python CV Microservice`.
+3.  **STRICT TYPING:** Use TypeScript interfaces for all Supabase data (e.g., `interface Issue { id: string, lat: number... }`).
+4.  **MOBILE FIRST:** All citizen and department views must use `min-h-screen`, `p-4`, and flexbox to look like native mobile apps when viewed in Chrome DevTools.
+5.  **HARDcoded DEMO DATA:** For the Admin and Public Map views, if the Supabase query returns empty, fallback to importing `mockData.ts` so the UI is never empty during the demo recording.
+```
+
+***
+
