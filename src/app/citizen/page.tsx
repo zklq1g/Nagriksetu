@@ -9,17 +9,19 @@ import { cn } from "@/lib/utils";
 
 import CameraCapture from "@/components/citizen/CameraCapture";
 import AIPipeline, { AIResult } from "@/components/citizen/AIPipeline";
-// Note: We will build GPSLock in the next step, using a mock for now
-// import GPSLock from "@/components/citizen/GPSLock"; 
+import GPSLock from "@/components/citizen/GPSLock";
 
 export default function CitizenPortal() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   
+  // Real GPS State
+  const [gpsLocked, setGpsLocked] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
   // Demo State
   const [demoMode, setDemoMode] = useState<"normal" | "duplicate">("normal");
-  const [gpsLocked, setGpsLocked] = useState(false); // Mock state for now
 
   const handleImageCaptured = (url: string) => {
     setCapturedImage(url);
@@ -40,6 +42,27 @@ export default function CitizenPortal() {
         description: `Auto-routed to ${result.department}.`
       });
     }
+  };
+
+  const handleLocationAcquired = (lat: number, lng: number) => {
+    setUserLocation({ lat, lng });
+    setGpsLocked(true);
+  };
+
+  const handleResetFlow = () => {
+    setCapturedImage(null);
+    setAiResult(null);
+    setGpsLocked(false);
+    setUserLocation(null);
+  };
+
+  const handleSubmit = () => {
+    // In production, this would POST to Supabase
+    toast.success("Report Submitted to Blockchain", { 
+      description: "Ticket ID: #NS-" + Math.random().toString(36).substring(2, 6).toUpperCase(),
+      duration: 4000
+    });
+    handleResetFlow();
   };
 
   return (
@@ -113,35 +136,26 @@ export default function CitizenPortal() {
                   </p>
                 </div>
 
-                {/* GPS Lock & Submit (Mocked for now) */}
-                <div className="space-y-4">
-                  <button
-                    onClick={() => setGpsLocked(true)} // Mocking the GPS lock
-                    disabled={gpsLocked}
-                    className={cn(
-                      "w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all",
-                      gpsLocked 
-                        ? "bg-green-500/10 text-green-400 border border-green-500/30" 
-                        : "bg-slate-800 text-white border border-slate-700 hover:bg-slate-700"
-                    )}
-                  >
-                    <MapPin className="w-4 h-4" />
-                    {gpsLocked ? "GPS Coordinates Locked" : "Acquire Live GPS Coordinates"}
-                  </button>
+                {/* REAL GPS Lock Component */}
+                <GPSLock 
+                  isLocked={gpsLocked}
+                  onLocationAcquired={handleLocationAcquired}
+                  onReset={() => setGpsLocked(false)}
+                />
 
-                  <button
-                    disabled={!gpsLocked || aiResult.isDuplicate}
-                    onClick={() => toast.success("Report Submitted", { description: "Ticket ID: #NS-9942X" })}
-                    className={cn(
-                      "w-full py-4 rounded-xl font-bold text-sm transition-all",
-                      gpsLocked && !aiResult.isDuplicate
-                        ? "bg-cyber-blue hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                        : "bg-slate-800 text-slate-500 cursor-not-allowed"
-                    )}
-                  >
-                    {aiResult.isDuplicate ? "Merged as Upvote" : "Submit Verified Report"}
-                  </button>
-                </div>
+                {/* Submit Button */}
+                <button
+                  disabled={!gpsLocked || aiResult.isDuplicate}
+                  onClick={handleSubmit}
+                  className={cn(
+                    "w-full py-4 rounded-xl font-bold text-sm transition-all",
+                    gpsLocked && !aiResult.isDuplicate
+                      ? "bg-cyber-blue hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                      : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                  )}
+                >
+                  {aiResult.isDuplicate ? "Merged as Upvote" : "Submit Verified Report"}
+                </button>
               </motion.div>
             )
           )}
