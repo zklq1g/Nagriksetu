@@ -17,17 +17,10 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Assign stream to video once it mounts
-  useEffect(() => {
-    if (isCameraActive && videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
-  }, [isCameraActive, stream]);
-
   // Cleanup camera on unmount
   useEffect(() => {
     return () => stopCamera();
-  }, [stream]); // ensure stream is in dependency array to stop it on unmount
+  }, [stream]);
 
   const startCamera = async () => {
     try {
@@ -36,6 +29,12 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
       });
       setStream(mediaStream);
       setIsCameraActive(true);
+      
+      // Assign and play immediately since the video tag is always mounted now
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.play().catch(e => console.error("Playback failed:", e));
+      }
     } catch (err) {
       toast.error("Camera Access Denied", { 
         description: "Please allow camera permissions in your browser. (Error: " + (err as Error).message + ")"
@@ -47,6 +46,9 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
     if (stream) {
       stream.getTracks().forEach(t => t.stop());
       setStream(null);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setIsCameraActive(false);
   };
@@ -68,11 +70,10 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
           
           stopCamera();
           
-          // Tiny delay to simulate processing before moving to next step
           setTimeout(() => {
             onImageCaptured(objectUrl, file);
             setIsProcessing(false);
-          }, 300);
+          }, 100);
         }
       }, 'image/jpeg', 0.85);
     }
@@ -80,11 +81,11 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
 
   return (
     <div className="w-full flex flex-col items-center gap-6">
-      {!isCameraActive ? (
+      <div className={`w-full max-w-sm ${!isCameraActive ? 'block' : 'hidden'}`}>
         <motion.button
           onClick={startCamera}
           whileTap={{ scale: 0.95 }}
-          className="relative flex flex-col items-center justify-center w-full max-w-sm aspect-square rounded-3xl border-2 border-dashed border-slate-700 bg-surface/50 hover:bg-surface hover:border-cyber-cyan/50 transition-all duration-300 group overflow-hidden"
+          className="relative flex flex-col items-center justify-center w-full aspect-square rounded-3xl border-2 border-dashed border-slate-700 bg-surface/50 hover:bg-surface hover:border-cyber-cyan/50 transition-all duration-300 group overflow-hidden"
         >
           <div className="absolute inset-0 bg-cyber-cyan/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="relative z-10 flex flex-col items-center gap-4 p-8 text-center">
@@ -100,21 +101,19 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
             </div>
           </div>
         </motion.button>
-      ) : (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative w-full max-w-sm aspect-[3/4] rounded-3xl overflow-hidden bg-black border-2 border-cyber-cyan/50 shadow-cyber-glow"
-        >
-          <video 
-            ref={videoRef} 
-            autoPlay
-            playsInline 
-            muted 
-            className="w-full h-full object-cover"
-          />
-          <canvas ref={canvasRef} className="hidden" />
-          
+      </div>
+
+      <div className={`relative w-full max-w-sm aspect-[3/4] rounded-3xl overflow-hidden bg-black border-2 border-cyber-cyan/50 shadow-cyber-glow ${isCameraActive ? 'block' : 'hidden'}`}>
+        <video 
+          ref={videoRef} 
+          autoPlay
+          playsInline 
+          muted 
+          className="w-full h-full object-cover"
+        />
+        <canvas ref={canvasRef} className="hidden" />
+        
+        {isCameraActive && (
           <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-8 z-20">
             <button 
               onClick={stopCamera} 
@@ -133,12 +132,12 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
             
             <div className="w-12 h-12" /> {/* Spacer to balance layout */}
           </div>
-          
-          {/* Viewfinder overlay */}
-          <div className="absolute inset-0 border-[40px] border-black/20 pointer-events-none" />
-          <div className="absolute inset-x-12 inset-y-24 border-2 border-white/20 rounded-xl pointer-events-none" />
-        </motion.div>
-      )}
+        )}
+        
+        {/* Viewfinder overlay */}
+        <div className="absolute inset-0 border-[40px] border-black/20 pointer-events-none" />
+        <div className="absolute inset-x-12 inset-y-24 border-2 border-white/20 rounded-xl pointer-events-none" />
+      </div>
     </div>
   );
 }
