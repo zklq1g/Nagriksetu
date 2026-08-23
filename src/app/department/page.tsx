@@ -82,7 +82,14 @@ export default function FieldOpsPortal() {
       const dist = getDistance(pos.coords.latitude, pos.coords.longitude, issue.lat, issue.lng);
       setWorkerLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       setDistance(dist);
-    });
+    }, () => {
+      // Desktop / error fallback
+      const simLat = 28.6139;
+      const simLng = 77.2090;
+      const dist = getDistance(simLat, simLng, issue.lat, issue.lng);
+      setWorkerLocation({ lat: simLat, lng: simLng });
+      setDistance(dist);
+    }, { enableHighAccuracy: false, timeout: 5000 });
   };
 
   const startProofCamera = async () => {

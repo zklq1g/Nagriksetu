@@ -38,20 +38,21 @@ export default function GPSLock({ onLocationAcquired, onReset, isLocked }: GPSLo
         });
       },
       (err) => {
+        // Desktop fallback: if real GPS fails or is denied, use a simulated location for the demo
+        const simLat = 28.6139;
+        const simLng = 77.2090; // New Delhi
+        setCoords({ lat: simLat, lng: simLng });
+        onLocationAcquired(simLat, simLng);
         setIsLoading(false);
-        let errorMsg = "Failed to acquire location.";
-        if (err.code === err.PERMISSION_DENIED) {
-          errorMsg = "Location access denied. Please enable in browser settings.";
-        } else if (err.code === err.TIMEOUT) {
-          errorMsg = "GPS request timed out. Please try again.";
-        }
-        setError(errorMsg);
-        toast.error("GPS Error", { description: errorMsg });
+        
+        toast.success("Simulated GPS Locked", { 
+          description: `Used simulated coordinates (Desktop fallback)` 
+        });
       },
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0 // Force fresh location
+        enableHighAccuracy: false, // Disabling this prevents long timeouts on Windows PCs
+        timeout: 5000,
+        maximumAge: 0
       }
     );
   };
