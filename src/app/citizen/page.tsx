@@ -6,7 +6,7 @@ import { ArrowLeft, MapPin, ToggleLeft, ToggleRight, AlertTriangle } from "lucid
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { getLocalIssues, saveLocalIssue, compressImage, Issue } from "@/lib/localDB";
+import { getLocalIssues, saveLocalIssue, updateLocalIssue, compressImage, Issue } from "@/lib/localDB";
 
 import CameraCapture from "@/components/citizen/CameraCapture";
 import AIPipeline, { AIResult } from "@/components/citizen/AIPipeline";
