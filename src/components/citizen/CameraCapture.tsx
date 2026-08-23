@@ -17,6 +17,14 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Assign stream to video once it mounts and is visible
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(e => console.error("Playback failed:", e));
+    }
+  }, [isCameraActive, stream]);
+
   // Cleanup camera on unmount
   useEffect(() => {
     return () => stopCamera();
@@ -29,12 +37,6 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
       });
       setStream(mediaStream);
       setIsCameraActive(true);
-      
-      // Assign and play immediately since the video tag is always mounted now
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play().catch(e => console.error("Playback failed:", e));
-      }
     } catch (err) {
       toast.error("Camera Access Denied", { 
         description: "Please allow camera permissions in your browser. (Error: " + (err as Error).message + ")"

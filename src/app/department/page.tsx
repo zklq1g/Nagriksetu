@@ -60,8 +60,17 @@ export default function FieldOpsPortal() {
 
   useEffect(() => { fetchTasks(); }, [demoDept]);
 
+  const [proofStream, setProofStream] = useState<MediaStream | null>(null);
+
   // Clean up camera on unmount
-  useEffect(() => { return () => stopCamera(); }, []);
+  useEffect(() => { return () => stopCamera(); }, [proofStream]);
+
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && proofStream) {
+      videoRef.current.srcObject = proofStream;
+      videoRef.current.play().catch(e => console.error("Playback failed:", e));
+    }
+  }, [isCameraActive, proofStream]);
 
   const openResolutionModal = (issue: any) => {
     setSelectedIssue(issue);
@@ -79,10 +88,7 @@ export default function FieldOpsPortal() {
   const startProofCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
+      setProofStream(stream);
       setIsCameraActive(true);
     } catch (err: any) {
       alert('Camera access denied: ' + err.message);
@@ -90,8 +96,12 @@ export default function FieldOpsPortal() {
   };
 
   const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+    if (proofStream) {
+      proofStream.getTracks().forEach(t => t.stop());
+      setProofStream(null);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setIsCameraActive(false);
   };
