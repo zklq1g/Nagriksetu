@@ -12,35 +12,41 @@ interface CameraCaptureProps {
 export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Assign stream to video once it mounts
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [isCameraActive, stream]);
+
   // Cleanup camera on unmount
   useEffect(() => {
     return () => stopCamera();
-  }, []);
+  }, [stream]); // ensure stream is in dependency array to stop it on unmount
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: { ideal: 'environment' } } 
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
+      setStream(mediaStream);
       setIsCameraActive(true);
     } catch (err) {
       toast.error("Camera Access Denied", { 
-        description: "Please allow camera permissions in your browser." 
+        description: "Please allow camera permissions in your browser. (Error: " + (err as Error).message + ")"
       });
     }
   };
 
   const stopCamera = () => {
-    if (videoRef.current?.srcObject) {
-      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      setStream(null);
     }
     setIsCameraActive(false);
   };
@@ -102,6 +108,7 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
         >
           <video 
             ref={videoRef} 
+            autoPlay
             playsInline 
             muted 
             className="w-full h-full object-cover"

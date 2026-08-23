@@ -76,17 +76,16 @@ export default function FieldOpsPortal() {
     });
   };
 
-  // WebRTC Camera functions for the proof-of-work capture
   const startProofCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
       setIsCameraActive(true);
-    } catch {
-      alert('Camera access denied. Please allow camera permissions.');
+    } catch (err: any) {
+      alert('Camera access denied: ' + err.message);
     }
   };
 
@@ -271,7 +270,7 @@ export default function FieldOpsPortal() {
                 <div className="relative w-full h-48 rounded-xl border-2 border-dashed border-slate-600 bg-slate-800/50 overflow-hidden flex items-center justify-center">
 
                   {/* Live video feed */}
-                  <video ref={videoRef} playsInline muted className={`absolute inset-0 w-full h-full object-cover ${isCameraActive ? 'block' : 'hidden'}`} />
+                  <video ref={videoRef} autoPlay playsInline muted className={`absolute inset-0 w-full h-full object-cover ${isCameraActive ? 'block' : 'hidden'}`} />
                   <canvas ref={canvasRef} className="hidden" />
 
                   {/* Preview */}
