@@ -13,6 +13,7 @@ export interface AIResult {
   severity: number;
   slaHours: number;
   isDuplicate: boolean;
+  duplicateId?: string;
 }
 
 interface AIPipelineProps {
@@ -53,7 +54,11 @@ export default function AIPipeline({ imageUrl, imageFile, onComplete, forceDupli
 
     const runSequence = async () => {
       // 1. Fire the real API call in the background IMMEDIATELY
-      let apiPromise = Promise.resolve({ ...FALLBACK_RESULT, isDuplicate: forceDuplicate });
+      let apiPromise = Promise.resolve({ 
+        ...FALLBACK_RESULT, 
+        isDuplicate: forceDuplicate,
+        ...(forceDuplicate ? { duplicateId: "1" } : {})
+      });
       
       if (imageFile && !forceDuplicate) {
         const formData = new FormData();

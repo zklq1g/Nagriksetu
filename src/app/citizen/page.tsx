@@ -72,9 +72,9 @@ export default function CitizenPortal() {
       
       for (const issue of existingIssues) {
         if (issue.department_id === aiResult.departmentId && getDistance(lat, lng, issue.lat, issue.lng) < 50) {
-          setAiResult({ ...aiResult, isDuplicate: true });
+          setAiResult({ ...aiResult, isDuplicate: true, duplicateId: issue.id });
           toast.warning("Duplicate Detected", {
-            description: "An identical issue was found nearby. Merged as UPVOTE.",
+            description: "An identical issue was found nearby.",
             duration: 5000
           });
           break;
@@ -89,6 +89,26 @@ export default function CitizenPortal() {
     setAiResult(null);
     setGpsLocked(false);
     setUserLocation(null);
+  };
+
+  const handleUpvote = () => {
+    if (!aiResult || !aiResult.duplicateId) return;
+    setIsSubmitting(true);
+    
+    setTimeout(() => {
+      const issues = getLocalIssues();
+      const existing = issues.find(i => i.id === aiResult.duplicateId);
+      if (existing) {
+        updateLocalIssue(existing.id, {
+          upvotes: (existing.upvotes || 1) + 1
+        });
+        toast.success("Upvoted Existing Issue", {
+          description: "Your report has been merged as an upvote. Priority increased!"
+        });
+      }
+      setIsSubmitting(false);
+      handleResetFlow();
+    }, 600); // tiny delay for UX
   };
 
   const handleSubmit = async () => {
@@ -209,19 +229,34 @@ export default function CitizenPortal() {
                   autoAcquire={true}
                 />
 
-                {/* Submit Button */}
-                <button
-                  disabled={!gpsLocked || aiResult.isDuplicate || isSubmitting}
-                  onClick={handleSubmit}
-                  className={cn(
-                    "w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2",
-                    gpsLocked && !aiResult.isDuplicate && !isSubmitting
-                      ? "bg-cyber-blue hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                      : "bg-slate-800 text-slate-500 cursor-not-allowed"
-                  )}
-                >
-                  {isSubmitting ? "Uploading to Supabase..." : aiResult.isDuplicate ? "Merged as Upvote" : "Submit Verified Report"}
-                </button>
+                {/* Submit / Upvote Button */}
+                {aiResult.isDuplicate ? (
+                  <button
+                    disabled={!gpsLocked || isSubmitting}
+                    onClick={handleUpvote}
+                    className={cn(
+                      "w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2",
+                      gpsLocked && !isSubmitting
+                        ? "bg-yellow-500 hover:bg-yellow-400 text-black shadow-lg shadow-yellow-500/20"
+                        : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                    )}
+                  >
+                    {isSubmitting ? "Merging as Upvote..." : "👍 Upvote Existing Issue"}
+                  </button>
+                ) : (
+                  <button
+                    disabled={!gpsLocked || isSubmitting}
+                    onClick={handleSubmit}
+                    className={cn(
+                      "w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2",
+                      gpsLocked && !isSubmitting
+                        ? "bg-cyber-blue hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
+                        : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                    )}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Verified Report"}
+                  </button>
+                )}
               </motion.div>
             )
           )}

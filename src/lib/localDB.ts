@@ -21,6 +21,7 @@ export interface Issue {
   created_at: string;
   resolved_at?: string;
   after_image_url?: string;
+  upvotes?: number;
 }
 
 const SEED_ISSUES: Issue[] = [

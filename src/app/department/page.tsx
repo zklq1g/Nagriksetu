@@ -33,9 +33,21 @@ export default function FieldOpsPortal() {
   const [workerLocation, setWorkerLocation] = useState<{lat: number, lng: number} | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoInternalRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [proofStream, setProofStream] = useState<MediaStream | null>(null);
+
+  // Callback ref: fires the instant <video> mounts into the DOM
+  const videoRef = (node: HTMLVideoElement | null) => {
+    videoInternalRef.current = node;
+    if (node && proofStream) {
+      node.srcObject = proofStream;
+      node.onloadedmetadata = () => {
+        node.play().catch(e => console.error("Dept cam play failed:", e));
+      };
+    }
+  };
 
   // Demo Controls
   const [demoDept, setDemoDept] = useState('All');
@@ -45,7 +57,6 @@ export default function FieldOpsPortal() {
       .filter(i => i.status === 'Open')
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-    // Map departments
     const mapped = allIssues.map(issue => ({
       ...issue,
       departments: DEPARTMENTS.find(d => d.id === issue.department_id)
@@ -60,17 +71,12 @@ export default function FieldOpsPortal() {
 
   useEffect(() => { fetchTasks(); }, [demoDept]);
 
-  const [proofStream, setProofStream] = useState<MediaStream | null>(null);
-
   // Clean up camera on unmount
-  useEffect(() => { return () => stopCamera(); }, [proofStream]);
-
   useEffect(() => {
-    if (isCameraActive && videoRef.current && proofStream) {
-      videoRef.current.srcObject = proofStream;
-      videoRef.current.play().catch(e => console.error("Playback failed:", e));
-    }
-  }, [isCameraActive, proofStream]);
+    return () => {
+      if (proofStream) proofStream.getTracks().forEach(t => t.stop());
+    };
+  }, [proofStream]);
 
   const openResolutionModal = (issue: any) => {
     setSelectedIssue(issue);
@@ -89,8 +95,19 @@ export default function FieldOpsPortal() {
       const dist = getDistance(simLat, simLng, issue.lat, issue.lng);
       setWorkerLocation({ lat: simLat, lng: simLng });
       setDistance(dist);
-    }, { enableHighAccuracy: false, timeout: 5000 });
+  }, { enableHighAccuracy: false, timeout: 5000 });
   };
+
+  // useEffect to attach stream AFTER both isCameraActive=true and proofStream are committed to DOM
+  useEffect(() => {
+    if (isCameraActive && proofStream && videoInternalRef.current) {
+      const video = videoInternalRef.current;
+      video.srcObject = proofStream;
+      video.onloadedmetadata = () => {
+        video.play().catch(e => console.error("Dept cam play failed:", e));
+      };
+    }
+  }, [isCameraActive, proofStream]);
 
   const startProofCamera = async () => {
     try {
@@ -107,19 +124,19 @@ export default function FieldOpsPortal() {
       proofStream.getTracks().forEach(t => t.stop());
       setProofStream(null);
     }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
+    if (videoInternalRef.current) {
+      videoInternalRef.current.srcObject = null;
     }
     setIsCameraActive(false);
   };
 
   const captureProofPhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoInternalRef.current || !canvasRef.current) return;
     const ctx = canvasRef.current.getContext('2d');
     if (ctx) {
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-      ctx.drawImage(videoRef.current, 0, 0);
+      canvasRef.current.width = videoInternalRef.current.videoWidth || 640;
+      canvasRef.current.height = videoInternalRef.current.videoHeight || 480;
+      ctx.drawImage(videoInternalRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
       canvasRef.current.toBlob((blob) => {
         if (blob) {
           const file = new File([blob], 'proof.jpg', { type: 'image/jpeg' });
