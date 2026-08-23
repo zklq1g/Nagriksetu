@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 // Types for our Mock AI Result
 export interface AIResult {
   department: string;
+  departmentId: string;
   confidence: number;
   severity: number;
   slaHours: number;
@@ -16,6 +17,7 @@ export interface AIResult {
 
 interface AIPipelineProps {
   imageUrl: string;
+  imageFile?: File; // The real file for /api/classify
   onComplete: (result: AIResult) => void;
   forceDuplicate?: boolean; // For the Demo Toggle
 }
@@ -30,47 +32,71 @@ const MOCK_LOGS = [
   "[AI] Calculating severity index & routing destination..."
 ];
 
-export default function AIPipeline({ imageUrl, onComplete, forceDuplicate = false }: AIPipelineProps) {
+// Fallback result if API is unavailable
+const FALLBACK_RESULT: AIResult = {
+  department: "PWD (Potholes/Roads)",
+  departmentId: "bd527a62-e673-452d-b0db-f3160190727b",
+  confidence: 96,
+  severity: 88,
+  slaHours: 168,
+  isDuplicate: false,
+};
+
+export default function AIPipeline({ imageUrl, imageFile, onComplete, forceDuplicate = false }: AIPipelineProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const [phase, setPhase] = useState<"scanning" | "complete">("scanning");
   const logContainerRef = useRef<HTMLDivElement>(null);
 
-  // The "Illusion" Sequence
+  // The "Illusion" Sequence — runs visual animation then calls real API
   useEffect(() => {
     let isMounted = true;
 
     const runSequence = async () => {
       for (let i = 0; i < MOCK_LOGS.length; i++) {
         if (!isMounted) return;
-        await new Promise(r => setTimeout(r, 600 + Math.random() * 400)); // Randomized typing speed
+        await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
         setLogs(prev => [...prev, MOCK_LOGS[i]]);
-        
-        // Auto-scroll terminal
         if (logContainerRef.current) {
           logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
         }
       }
 
-      // Final processing delay
       await new Promise(r => setTimeout(r, 800));
       if (isMounted) setPhase("complete");
-      
-      // Show results after a brief pause
-      await new Promise(r => setTimeout(r, 1000));
-      if (isMounted) {
-        onComplete({
-          department: "Public Works Department (PWD)",
-          confidence: 96,
-          severity: 88,
-          slaHours: 72,
-          isDuplicate: forceDuplicate
-        });
+      await new Promise(r => setTimeout(r, 800));
+
+      if (!isMounted) return;
+
+      // Call the real classify API if we have a file
+      let result: AIResult = { ...FALLBACK_RESULT, isDuplicate: forceDuplicate };
+
+      if (imageFile && !forceDuplicate) {
+        try {
+          const formData = new FormData();
+          formData.append("image", imageFile);
+          const res = await fetch("/api/classify", { method: "POST", body: formData });
+          if (res.ok) {
+            const data = await res.json();
+            result = {
+              department: data.department?.name ?? FALLBACK_RESULT.department,
+              departmentId: data.department?.id ?? FALLBACK_RESULT.departmentId,
+              confidence: data.confidence === "high" ? 96 : 42,
+              severity: data.severity ?? FALLBACK_RESULT.severity,
+              slaHours: data.department?.sla_hours ?? FALLBACK_RESULT.slaHours,
+              isDuplicate: false,
+            };
+          }
+        } catch {
+          // API unavailable — silently use fallback
+        }
       }
+
+      if (isMounted) onComplete(result);
     };
 
     runSequence();
     return () => { isMounted = false; };
-  }, [onComplete, forceDuplicate]);
+  }, [onComplete, forceDuplicate, imageFile]);
 
   return (
     <motion.div 

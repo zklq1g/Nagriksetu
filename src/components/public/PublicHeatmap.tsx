@@ -5,35 +5,50 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { generateHeatmapPoints } from "@/data/mockPublicData";
+import { getLocalIssues } from "@/lib/localDB";
 
 // Component to handle the Heat Layer injection
 function HeatmapLayer() {
   const map = useMap();
-  // Generate points once on mount; useMemo not needed since this is purely visual
-  const pointsRef = useRef(generateHeatmapPoints());
+  const layerRef = useRef<L.Layer | null>(null);
 
   useEffect(() => {
-    let heat: L.Layer | null = null;
+    const loadHeat = async () => {
+      const data = getLocalIssues();
 
-    // Dynamically import to avoid SSR issues
-    import("leaflet.heat").then(() => {
-      // @ts-ignore - leaflet.heat extends L but has no official types
-      heat = L.heatLayer(pointsRef.current, {
+      // Map to heatmap points — Open issues at full intensity, Resolved at lower
+      let points: [number, number, number][] = [];
+      if (data && data.length > 0) {
+        points = data.map((row: any) => [
+          row.lat,
+          row.lng,
+          row.status === "Resolved" ? 0.3 : 1.0,
+        ]);
+      } else {
+        points = generateHeatmapPoints();
+      }
+
+      // Dynamically import to avoid SSR issues
+      await import("leaflet.heat");
+      // @ts-ignore
+      layerRef.current = L.heatLayer(points, {
         radius: 25,
         blur: 15,
         maxZoom: 17,
         gradient: {
-          0.2: "#3b82f6", // Blue
-          0.4: "#22d3ee", // Cyan
-          0.6: "#facc15", // Yellow
-          0.8: "#f97316", // Orange
-          1.0: "#ef4444"  // Red
-        }
+          0.2: "#3b82f6",
+          0.4: "#22d3ee",
+          0.6: "#facc15",
+          0.8: "#f97316",
+          1.0: "#ef4444",
+        },
       }).addTo(map);
-    });
+    };
+
+    loadHeat();
 
     return () => {
-      if (heat) map.removeLayer(heat);
+      if (layerRef.current) map.removeLayer(layerRef.current);
     };
   }, [map]);
 
@@ -42,9 +57,9 @@ function HeatmapLayer() {
 
 export default function PublicHeatmap() {
   return (
-    <MapContainer 
+    <MapContainer
       center={[28.6328, 77.2195]} // Connaught Place
-      zoom={14} 
+      zoom={14}
       className="w-full h-full bg-slate-900"
       zoomControl={false}
       scrollWheelZoom={true}

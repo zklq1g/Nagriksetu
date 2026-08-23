@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 
 interface CameraCaptureProps {
-  onImageCaptured: (imageUrl: string) => void;
+  onImageCaptured: (imageUrl: string, file: File) => void;
 }
 
 export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
@@ -28,7 +28,7 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
     
     // Simulate a tiny delay before starting the heavy AI pipeline
     setTimeout(() => {
-      onImageCaptured(objectUrl);
+      onImageCaptured(objectUrl, file);
       setIsProcessing(false);
     }, 300);
   };

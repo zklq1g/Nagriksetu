@@ -6,16 +6,22 @@ import { ArrowLeft, MapPin, ToggleLeft, ToggleRight, AlertTriangle } from "lucid
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getLocalIssues, saveLocalIssue, compressImage, Issue } from "@/lib/localDB";
 
 import CameraCapture from "@/components/citizen/CameraCapture";
 import AIPipeline, { AIResult } from "@/components/citizen/AIPipeline";
 import GPSLock from "@/components/citizen/GPSLock";
 
+// Demo user UUID — in production this comes from Supabase Auth
+const DEMO_USER_ID = "00000000-0000-0000-0000-000000000001";
+
 export default function CitizenPortal() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [capturedFile, setCapturedFile] = useState<File | null>(null);
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Real GPS State
   const [gpsLocked, setGpsLocked] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -23,15 +29,16 @@ export default function CitizenPortal() {
   // Demo State
   const [demoMode, setDemoMode] = useState<"normal" | "duplicate">("normal");
 
-  const handleImageCaptured = (url: string) => {
+  const handleImageCaptured = (url: string, file: File) => {
     setCapturedImage(url);
+    setCapturedFile(file);
     setIsScanning(true);
   };
 
   const handlePipelineComplete = (result: AIResult) => {
     setAiResult(result);
     setIsScanning(false);
-    
+
     if (result.isDuplicate) {
       toast.warning("Duplicate Detected", {
         description: "Haversine Geofencing & pHash Match: Merged as UPVOTE.",
@@ -44,25 +51,83 @@ export default function CitizenPortal() {
     }
   };
 
-  const handleLocationAcquired = (lat: number, lng: number) => {
+  // Haversine formula to calculate distance in meters
+  const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371e3;
+    const p1 = lat1 * Math.PI / 180;
+    const p2 = lat2 * Math.PI / 180;
+    const dp = (lat2 - lat1) * Math.PI / 180;
+    const dl = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const handleLocationAcquired = async (lat: number, lng: number) => {
     setUserLocation({ lat, lng });
     setGpsLocked(true);
+
+    // Real Duplicate Detection Check (Local)
+    if (aiResult && !aiResult.isDuplicate && demoMode !== "duplicate") {
+      const existingIssues = getLocalIssues().filter(i => i.status === "Open");
+      
+      for (const issue of existingIssues) {
+        if (issue.department_id === aiResult.departmentId && getDistance(lat, lng, issue.lat, issue.lng) < 50) {
+          setAiResult({ ...aiResult, isDuplicate: true });
+          toast.warning("Duplicate Detected", {
+            description: "An identical issue was found nearby. Merged as UPVOTE.",
+            duration: 5000
+          });
+          break;
+        }
+      }
+    }
   };
 
   const handleResetFlow = () => {
     setCapturedImage(null);
+    setCapturedFile(null);
     setAiResult(null);
     setGpsLocked(false);
     setUserLocation(null);
   };
 
-  const handleSubmit = () => {
-    // In production, this would POST to Supabase
-    toast.success("Report Submitted to Blockchain", { 
-      description: "Ticket ID: #NS-" + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      duration: 4000
-    });
-    handleResetFlow();
+  const handleSubmit = async () => {
+    if (!capturedFile || !userLocation || !aiResult) return;
+    setIsSubmitting(true);
+
+    try {
+      // Compress and convert image to base64 for local storage
+      const base64Image = await compressImage(capturedFile, 600);
+
+      const newIssue: Issue = {
+        id: crypto.randomUUID(),
+        user_id: DEMO_USER_ID,
+        department_id: aiResult.departmentId,
+        image_url: base64Image,
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        status: "Open",
+        ai_confidence: aiResult.confidence,
+        ai_severity_score: aiResult.severity,
+        description: `Reported via Citizen Portal — ${aiResult.department}`,
+        created_at: new Date().toISOString()
+      };
+
+      saveLocalIssue(newIssue);
+
+      const ticketId = newIssue.id.slice(0, 8).toUpperCase();
+      toast.success("Report Submitted", {
+        description: `Ticket #NS-${ticketId} filed. SLA: ${aiResult.slaHours}h`,
+        duration: 5000,
+      });
+      handleResetFlow();
+    } catch (err: any) {
+      toast.error("Submission Failed", {
+        description: err?.message ?? "Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -74,14 +139,14 @@ export default function CitizenPortal() {
           <span className="font-bold">Back</span>
         </Link>
         <h1 className="font-black tracking-tight text-white">Report Issue</h1>
-        
+
         {/* The Demo Toggle */}
-        <button 
+        <button
           onClick={() => setDemoMode(demoMode === "normal" ? "duplicate" : "normal")}
           className={cn(
             "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border transition-all",
-            demoMode === "duplicate" 
-              ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400" 
+            demoMode === "duplicate"
+              ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
               : "bg-slate-800 border-slate-700 text-slate-400"
           )}
         >
@@ -114,8 +179,8 @@ export default function CitizenPortal() {
                 {/* AI Result Summary */}
                 <div className={cn(
                   "p-4 rounded-xl border",
-                  aiResult.isDuplicate 
-                    ? "bg-yellow-500/5 border-yellow-500/20" 
+                  aiResult.isDuplicate
+                    ? "bg-yellow-500/5 border-yellow-500/20"
                     : "bg-green-500/5 border-green-500/20"
                 )}>
                   <div className="flex items-center gap-3 mb-2">
@@ -129,7 +194,7 @@ export default function CitizenPortal() {
                     </h3>
                   </div>
                   <p className="text-sm text-slate-400">
-                    {aiResult.isDuplicate 
+                    {aiResult.isDuplicate
                       ? "An identical issue was reported 12 minutes ago within 15 meters. Your report has been merged as an upvote to increase SLA priority."
                       : `Issue classified as high severity. Routed to ${aiResult.department} with a ${aiResult.slaHours}-hour resolution SLA.`
                     }
@@ -137,7 +202,7 @@ export default function CitizenPortal() {
                 </div>
 
                 {/* REAL GPS Lock Component */}
-                <GPSLock 
+                <GPSLock
                   isLocked={gpsLocked}
                   onLocationAcquired={handleLocationAcquired}
                   onReset={() => setGpsLocked(false)}
@@ -145,16 +210,16 @@ export default function CitizenPortal() {
 
                 {/* Submit Button */}
                 <button
-                  disabled={!gpsLocked || aiResult.isDuplicate}
+                  disabled={!gpsLocked || aiResult.isDuplicate || isSubmitting}
                   onClick={handleSubmit}
                   className={cn(
-                    "w-full py-4 rounded-xl font-bold text-sm transition-all",
-                    gpsLocked && !aiResult.isDuplicate
+                    "w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2",
+                    gpsLocked && !aiResult.isDuplicate && !isSubmitting
                       ? "bg-cyber-blue hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
                       : "bg-slate-800 text-slate-500 cursor-not-allowed"
                   )}
                 >
-                  {aiResult.isDuplicate ? "Merged as Upvote" : "Submit Verified Report"}
+                  {isSubmitting ? "Uploading to Supabase..." : aiResult.isDuplicate ? "Merged as Upvote" : "Submit Verified Report"}
                 </button>
               </motion.div>
             )
@@ -165,8 +230,9 @@ export default function CitizenPortal() {
       {/* The AI Pipeline Overlay */}
       <AnimatePresence>
         {isScanning && capturedImage && (
-          <AIPipeline 
-            imageUrl={capturedImage} 
+          <AIPipeline
+            imageUrl={capturedImage}
+            imageFile={capturedFile ?? undefined}
             onComplete={handlePipelineComplete}
             forceDuplicate={demoMode === "duplicate"}
           />

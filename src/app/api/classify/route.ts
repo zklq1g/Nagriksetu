@@ -1,16 +1,15 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+
+const DEPARTMENTS = [
+  { id: "a65c2b53-7cad-46ef-a0e9-4d91d8dae3b8", name: "Sanitation (Garbage)", sla_hours: 24, color: "#ef4444" },
+  { id: "6c832e05-48d6-48c5-a819-d7b459df440d", name: "Electrical (Streetlights)", sla_hours: 48, color: "#f59e0b" },
+  { id: "bd527a62-e673-452d-b0db-f3160190727b", name: "PWD (Potholes/Roads)", sla_hours: 168, color: "#3b82f6" }
+];
 
 export async function POST(request: NextRequest) {
-  // Initialize inside the handler to prevent Vercel build errors if env vars are not set at build time
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  const genAIKey = process.env.GEMINI_API_KEY || '';
-  const genAI = new GoogleGenerativeAI(genAIKey);
-
   try {
     const formData = await request.formData();
     const imageFile = formData.get('image') as File;
@@ -57,14 +56,7 @@ Respond ONLY with a valid JSON object in this exact format:
       parsed = { category: rawResponse, severity: 50 }; // fallback
     }
 
-    // Fetch all departments from DB
-    const { data: departments, error: dbError } = await supabase
-      .from('departments')
-      .select('*');
-
-    if (dbError || !departments) {
-      return NextResponse.json({ error: 'Could not fetch departments' }, { status: 500 });
-    }
+    const departments = DEPARTMENTS;
 
     const matched = departments.find(dept =>
       parsed.category.toLowerCase().includes(dept.name.toLowerCase()) ||

@@ -1,13 +1,57 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, TrendingUp } from "lucide-react";
+import { Trophy, TrendingUp, Loader2 } from "lucide-react";
 import { departmentStats } from "@/data/mockPublicData";
 import { cn } from "@/lib/utils";
+import { getLocalIssues, DEPARTMENTS } from "@/lib/localDB";
+
+interface DeptStat {
+  name: string;
+  resolved: number;
+  total: number;
+  color: string;
+}
+
+const DEPT_COLORS: Record<string, string> = {
+  "PWD (Potholes/Roads)": "bg-blue-500",
+  "Sanitation (Garbage)": "bg-green-500",
+  "Electrical (Streetlights)": "bg-yellow-500",
+};
 
 export default function Leaderboard() {
+  const [stats, setStats] = useState<DeptStat[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = () => {
+      const issues = getLocalIssues();
+      const departments = DEPARTMENTS;
+
+      if (departments && issues && departments.length > 0) {
+        const computed: DeptStat[] = departments.map((dept: any) => {
+          const deptIssues = issues.filter((i: any) => i.department_id === dept.id);
+          return {
+            name: dept.name,
+            total: deptIssues.length,
+            resolved: deptIssues.filter((i: any) => i.status === "Resolved").length,
+            color: DEPT_COLORS[dept.name] ?? "bg-purple-500",
+          };
+        }).filter(d => d.total > 0);
+
+        setStats(computed.length > 0 ? computed : departmentStats);
+      } else {
+        setStats(departmentStats);
+      }
+      setLoading(false);
+    };
+
+    fetchStats();
+  }, []);
+
   return (
-    <motion.div 
+    <motion.div
       initial={{ x: 100, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ type: "spring", damping: 20, delay: 0.5 }}
@@ -23,35 +67,41 @@ export default function Leaderboard() {
       </div>
 
       <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-        {departmentStats.map((dept, i) => {
-          const percentage = Math.round((dept.resolved / dept.total) * 100);
-          return (
-            <div key={i} className="space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs font-bold text-slate-200">{dept.name}</span>
-                <span className="text-xs font-mono text-slate-400">
-                  {dept.resolved}/{dept.total}
-                </span>
+        {loading ? (
+          <div className="flex justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+          </div>
+        ) : (
+          stats.map((dept, i) => {
+            const percentage = dept.total > 0 ? Math.round((dept.resolved / dept.total) * 100) : 0;
+            return (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs font-bold text-slate-200">{dept.name}</span>
+                  <span className="text-xs font-mono text-slate-400">
+                    {dept.resolved}/{dept.total}
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-slate-700 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${percentage}%` }}
+                    transition={{ duration: 1, delay: 0.8 + (i * 0.1), ease: "easeOut" }}
+                    className={cn("h-full rounded-full", dept.color)}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <span className={cn(
+                    "text-[10px] font-black",
+                    percentage > 80 ? "text-green-400" : percentage > 50 ? "text-yellow-400" : "text-red-400"
+                  )}>
+                    {percentage}% SLA Met
+                  </span>
+                </div>
               </div>
-              <div className="h-2 w-full bg-slate-700 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${percentage}%` }}
-                  transition={{ duration: 1, delay: 0.8 + (i * 0.1), ease: "easeOut" }}
-                  className={cn("h-full rounded-full", dept.color)}
-                />
-              </div>
-              <div className="flex justify-end">
-                <span className={cn(
-                  "text-[10px] font-black",
-                  percentage > 80 ? "text-green-400" : percentage > 50 ? "text-yellow-400" : "text-red-400"
-                )}>
-                  {percentage}% SLA Met
-                </span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </motion.div>
   );

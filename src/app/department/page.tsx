@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MapPin, Camera, CheckCircle2, AlertTriangle, 
   Loader2, X, Navigation, ShieldCheck, Aperture
 } from 'lucide-react';
+import { getLocalIssues, updateLocalIssue, compressImage, DEPARTMENTS } from "@/lib/localDB";
 
 // Haversine formula to calculate distance between two GPS coordinates (in meters)
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -24,33 +24,37 @@ const getSLAStatus = (createdAt: string, slaHours: number) => {
   return { color: 'border-green-500 bg-green-500/10', text: 'ON TRACK', textCol: 'text-green-400' };
 };
 
-export default function DepartmentPortal() {
-  const supabase = createClient();
+export default function FieldOpsPortal() {
   const [issues, setIssues] = useState<any[]>([]);
-  const [selectedIssue, setSelectedIssue] = useState<any>(null);
-  const [workerLocation, setWorkerLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedIssue, setSelectedIssue] = useState<any | null>(null);
   const [afterImage, setAfterImage] = useState<File | null>(null);
   const [afterPreview, setAfterPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [workerLocation, setWorkerLocation] = useState<{lat: number, lng: number} | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
 
-  // WebRTC camera for proof-of-work
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
 
   // Demo Controls
-  const [demoDept, setDemoDept] = useState('Sanitation');
+  const [demoDept, setDemoDept] = useState('All');
 
-  const fetchTasks = async () => {
-    const { data } = await supabase
-      .from('issues')
-      .select('*, departments(name, sla_hours)')
-      .eq('status', 'Open')
-      .order('created_at', { ascending: true }); // Oldest first = closest to SLA breach
+  const fetchTasks = () => {
+    const allIssues = getLocalIssues()
+      .filter(i => i.status === 'Open')
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
-    if (data) {
-      setIssues(data.filter((i: any) => i.departments.name.toLowerCase().includes(demoDept.toLowerCase())));
+    // Map departments
+    const mapped = allIssues.map(issue => ({
+      ...issue,
+      departments: DEPARTMENTS.find(d => d.id === issue.department_id)
+    }));
+
+    if (demoDept === 'All') {
+      setIssues(mapped);
+    } else {
+      setIssues(mapped.filter(i => i.departments?.name.toLowerCase().includes(demoDept.toLowerCase())));
     }
   };
 
@@ -58,16 +62,6 @@ export default function DepartmentPortal() {
 
   // Clean up camera on unmount
   useEffect(() => { return () => stopCamera(); }, []);
-
-  const verifyLocation = () => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      setWorkerLocation(loc);
-      if (selectedIssue) {
-        setDistance(getDistance(loc.lat, loc.lng, selectedIssue.lat, selectedIssue.lng));
-      }
-    });
-  };
 
   const openResolutionModal = (issue: any) => {
     setSelectedIssue(issue);
@@ -125,23 +119,27 @@ export default function DepartmentPortal() {
     if (!afterImage || !selectedIssue) return;
     setIsSubmitting(true);
 
-    const fileName = `resolved-${Date.now()}.jpg`;
-    await supabase.storage.from('issues').upload(fileName, afterImage);
-    const { data: { publicUrl } } = supabase.storage.from('issues').getPublicUrl(fileName);
+    try {
+      const base64Image = await compressImage(afterImage, 600);
+      
+      updateLocalIssue(selectedIssue.id, {
+        status: 'Resolved',
+        resolved_at: new Date().toISOString(),
+        after_image_url: base64Image,
+      });
 
-    await supabase.from('issues').update({
-      status: 'Resolved',
-      resolved_at: new Date().toISOString(),
-      after_image_url: publicUrl,
-    }).eq('id', selectedIssue.id);
-
-    setSelectedIssue(null);
-    setAfterImage(null);
-    setAfterPreview(null);
-    setWorkerLocation(null);
-    setDistance(null);
-    fetchTasks();
-    setIsSubmitting(false);
+      setSelectedIssue(null);
+      setAfterImage(null);
+      setAfterPreview(null);
+      setWorkerLocation(null);
+      setDistance(null);
+      fetchTasks();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to resolve issue.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isLocationVerified = distance !== null && distance <= 100;
@@ -153,6 +151,7 @@ export default function DepartmentPortal() {
       <div className="fixed top-4 right-4 bg-blue-500/20 border border-blue-500/50 text-blue-300 px-3 py-1.5 rounded-full text-xs font-bold z-50 flex items-center gap-2">
         <span>Dept:</span>
         <select value={demoDept} onChange={(e) => setDemoDept(e.target.value)} className="bg-transparent border-none text-blue-300 font-bold focus:ring-0 cursor-pointer">
+          <option value="All">All Departments</option>
           <option value="Sanitation">Sanitation</option>
           <option value="PWD">PWD (Roads)</option>
           <option value="Electrical">Electrical</option>
@@ -160,7 +159,7 @@ export default function DepartmentPortal() {
       </div>
 
       <h1 className="text-2xl font-black mt-12 mb-1 tracking-tight">⚙️ Field Operations</h1>
-      <p className="text-slate-400 mb-6 text-sm">{demoDept} Department · {issues.length} Active Tasks</p>
+      <p className="text-slate-400 mb-6 text-sm">{demoDept === 'All' ? 'All Departments' : demoDept} · {issues.length} Active Tasks</p>
 
       {/* Task Queue */}
       <div className="space-y-4 pb-24">
