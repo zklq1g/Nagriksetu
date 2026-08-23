@@ -47,50 +47,54 @@ export default function AIPipeline({ imageUrl, imageFile, onComplete, forceDupli
   const [phase, setPhase] = useState<"scanning" | "complete">("scanning");
   const logContainerRef = useRef<HTMLDivElement>(null);
 
-  // The "Illusion" Sequence — runs visual animation then calls real API
+  // The "Illusion" Sequence — runs visual animation and real API concurrently
   useEffect(() => {
     let isMounted = true;
 
     const runSequence = async () => {
+      // 1. Fire the real API call in the background IMMEDIATELY
+      let apiPromise = Promise.resolve({ ...FALLBACK_RESULT, isDuplicate: forceDuplicate });
+      
+      if (imageFile && !forceDuplicate) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+        
+        apiPromise = fetch("/api/classify", { method: "POST", body: formData })
+          .then(async (res) => {
+            if (res.ok) {
+              const data = await res.json();
+              return {
+                department: data.department?.name ?? FALLBACK_RESULT.department,
+                departmentId: data.department?.id ?? FALLBACK_RESULT.departmentId,
+                confidence: data.confidence === "high" ? 96 : 42,
+                severity: data.severity ?? FALLBACK_RESULT.severity,
+                slaHours: data.department?.sla_hours ?? FALLBACK_RESULT.slaHours,
+                isDuplicate: false,
+              };
+            }
+            return { ...FALLBACK_RESULT, isDuplicate: forceDuplicate };
+          })
+          .catch(() => ({ ...FALLBACK_RESULT, isDuplicate: forceDuplicate }));
+      }
+
+      // 2. Play the visual logs (hides the API loading time)
       for (let i = 0; i < MOCK_LOGS.length; i++) {
         if (!isMounted) return;
-        await new Promise(r => setTimeout(r, 150 + Math.random() * 150)); // Much faster!
+        await new Promise(r => setTimeout(r, 150 + Math.random() * 150));
         setLogs(prev => [...prev, MOCK_LOGS[i]]);
         if (logContainerRef.current) {
           logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
         }
       }
 
-      await new Promise(r => setTimeout(r, 300));
-      if (isMounted) setPhase("complete");
-      await new Promise(r => setTimeout(r, 800));
-
+      // 3. Wait for the API call to finish (if it hasn't already)
+      const result = await apiPromise;
       if (!isMounted) return;
 
-      // Call the real classify API if we have a file
-      let result: AIResult = { ...FALLBACK_RESULT, isDuplicate: forceDuplicate };
-
-      if (imageFile && !forceDuplicate) {
-        try {
-          const formData = new FormData();
-          formData.append("image", imageFile);
-          const res = await fetch("/api/classify", { method: "POST", body: formData });
-          if (res.ok) {
-            const data = await res.json();
-            result = {
-              department: data.department?.name ?? FALLBACK_RESULT.department,
-              departmentId: data.department?.id ?? FALLBACK_RESULT.departmentId,
-              confidence: data.confidence === "high" ? 96 : 42,
-              severity: data.severity ?? FALLBACK_RESULT.severity,
-              slaHours: data.department?.sla_hours ?? FALLBACK_RESULT.slaHours,
-              isDuplicate: false,
-            };
-          }
-        } catch {
-          // API unavailable — silently use fallback
-        }
-      }
-
+      // 4. Briefly flash the "Complete" phase, then transition out
+      setPhase("complete");
+      await new Promise(r => setTimeout(r, 400));
+      
       if (isMounted) onComplete(result);
     };
 
