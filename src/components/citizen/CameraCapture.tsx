@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Camera, AlertTriangle, Aperture, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -11,24 +11,33 @@ interface CameraCaptureProps {
 
 export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isCameraActive, setIsCameraActive] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
   
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoInternalRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Assign stream to video once it mounts and is visible
-  useEffect(() => {
-    if (isCameraActive && videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(e => console.error("Playback failed:", e));
+  // Bulletproof callback ref: fires immediately when the <video> element mounts
+  const videoRef = useCallback((node: HTMLVideoElement | null) => {
+    videoInternalRef.current = node;
+    if (node && stream) {
+      node.srcObject = stream;
+      node.onloadedmetadata = () => {
+        node.play().catch((e) => console.error("Play failed:", e));
+      };
     }
-  }, [isCameraActive, stream]);
+  }, [stream]);
 
-  // Cleanup camera on unmount
+  const stopCamera = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      setStream(null);
+    }
+  }, [stream]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => stopCamera();
-  }, [stream]);
+  }, [stopCamera]);
 
   const startCamera = async () => {
     try {
@@ -36,7 +45,6 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
         video: { facingMode: { ideal: 'environment' } } 
       });
       setStream(mediaStream);
-      setIsCameraActive(true);
     } catch (err) {
       toast.error("Camera Access Denied", { 
         description: "Please allow camera permissions in your browser. (Error: " + (err as Error).message + ")"
@@ -44,27 +52,18 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
     }
   };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(t => t.stop());
-      setStream(null);
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setIsCameraActive(false);
-  };
-
   const takePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-    const ctx = canvasRef.current.getContext('2d');
-    
+    const video = videoInternalRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
     if (ctx) {
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-      ctx.drawImage(videoRef.current, 0, 0);
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      canvasRef.current.toBlob((blob) => {
+      canvas.toBlob((blob) => {
         if (blob) {
           setIsProcessing(true);
           const file = new File([blob], `citizen-report-${Date.now()}.jpg`, { type: 'image/jpeg' });
@@ -83,11 +82,11 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
 
   return (
     <div className="w-full flex flex-col items-center gap-6">
-      <div className={`w-full max-w-sm ${!isCameraActive ? 'block' : 'hidden'}`}>
+      {!stream ? (
         <motion.button
           onClick={startCamera}
           whileTap={{ scale: 0.95 }}
-          className="relative flex flex-col items-center justify-center w-full aspect-square rounded-3xl border-2 border-dashed border-slate-700 bg-surface/50 hover:bg-surface hover:border-cyber-cyan/50 transition-all duration-300 group overflow-hidden"
+          className="relative flex flex-col items-center justify-center w-full max-w-sm aspect-square rounded-3xl border-2 border-dashed border-slate-700 bg-surface/50 hover:bg-surface hover:border-cyber-cyan/50 transition-all duration-300 group overflow-hidden"
         >
           <div className="absolute inset-0 bg-cyber-cyan/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="relative z-10 flex flex-col items-center gap-4 p-8 text-center">
@@ -103,19 +102,21 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
             </div>
           </div>
         </motion.button>
-      </div>
-
-      <div className={`relative w-full max-w-sm aspect-[3/4] rounded-3xl overflow-hidden bg-black border-2 border-cyber-cyan/50 shadow-cyber-glow ${isCameraActive ? 'block' : 'hidden'}`}>
-        <video 
-          ref={videoRef} 
-          autoPlay
-          playsInline 
-          muted 
-          className="w-full h-full object-cover"
-        />
-        <canvas ref={canvasRef} className="hidden" />
-        
-        {isCameraActive && (
+      ) : (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative w-full max-w-sm aspect-[3/4] rounded-3xl overflow-hidden bg-black border-2 border-cyber-cyan/50 shadow-cyber-glow"
+        >
+          <video 
+            ref={videoRef} 
+            autoPlay
+            playsInline 
+            muted 
+            className="w-full h-full object-cover"
+          />
+          <canvas ref={canvasRef} className="hidden" />
+          
           <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-8 z-20">
             <button 
               onClick={stopCamera} 
@@ -134,12 +135,12 @@ export default function CameraCapture({ onImageCaptured }: CameraCaptureProps) {
             
             <div className="w-12 h-12" /> {/* Spacer to balance layout */}
           </div>
-        )}
-        
-        {/* Viewfinder overlay */}
-        <div className="absolute inset-0 border-[40px] border-black/20 pointer-events-none" />
-        <div className="absolute inset-x-12 inset-y-24 border-2 border-white/20 rounded-xl pointer-events-none" />
-      </div>
+          
+          {/* Viewfinder overlay */}
+          <div className="absolute inset-0 border-[40px] border-black/20 pointer-events-none" />
+          <div className="absolute inset-x-12 inset-y-24 border-2 border-white/20 rounded-xl pointer-events-none" />
+        </motion.div>
+      )}
     </div>
   );
 }
