@@ -206,6 +206,7 @@ export default function CitizenPortal() {
                   isLocked={gpsLocked}
                   onLocationAcquired={handleLocationAcquired}
                   onReset={() => setGpsLocked(false)}
+                  autoAcquire={true}
                 />
 
                 {/* Submit Button */}

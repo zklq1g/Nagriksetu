@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Loader2, AlertTriangle, Lock, Unlock } from "lucide-react";
 import { toast } from "sonner";
@@ -10,12 +10,20 @@ interface GPSLockProps {
   onLocationAcquired: (lat: number, lng: number) => void;
   onReset: () => void;
   isLocked: boolean;
+  autoAcquire?: boolean;
 }
 
-export default function GPSLock({ onLocationAcquired, onReset, isLocked }: GPSLockProps) {
+export default function GPSLock({ onLocationAcquired, onReset, isLocked, autoAcquire = false }: GPSLockProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Auto-acquire logic
+  useEffect(() => {
+    if (autoAcquire && !isLocked && !isLoading && !coords) {
+      requestLocation();
+    }
+  }, [autoAcquire, isLocked]);
 
   const requestLocation = () => {
     if (!navigator.geolocation) {

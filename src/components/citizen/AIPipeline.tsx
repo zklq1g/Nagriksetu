@@ -54,14 +54,14 @@ export default function AIPipeline({ imageUrl, imageFile, onComplete, forceDupli
     const runSequence = async () => {
       for (let i = 0; i < MOCK_LOGS.length; i++) {
         if (!isMounted) return;
-        await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+        await new Promise(r => setTimeout(r, 150 + Math.random() * 150)); // Much faster!
         setLogs(prev => [...prev, MOCK_LOGS[i]]);
         if (logContainerRef.current) {
           logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
         }
       }
 
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 300));
       if (isMounted) setPhase("complete");
       await new Promise(r => setTimeout(r, 800));
 
