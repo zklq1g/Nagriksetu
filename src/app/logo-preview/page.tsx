@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { LogoOriginal, LogoPatch, LogoWrench, LogoPulse, LogoScaffold, LogoNut, LogoLoop } from "@/components/ui/Logo";
+import { LogoOriginal, LogoPatch, LogoWrench, LogoWrenchB, LogoPulse, LogoScaffold, LogoNut, LogoLoop } from "@/components/ui/Logo";
 
 export default function LogoPreview() {
   const concepts = [
     { key: "original", name: "Original Concept (Target Pin)", dark: <LogoOriginal theme="dark" />, light: <LogoOriginal theme="light" /> },
     { key: "patch", name: "Concept 1: The Infrastructure Patch (Recommended)", dark: <LogoPatch theme="dark" />, light: <LogoPatch theme="light" /> },
     { key: "wrench", name: "Concept 2: The Tactical Wrench", dark: <LogoWrench theme="dark" />, light: <LogoWrench theme="light" /> },
+    { key: "wrenchb", name: "Concept 2b: The Crescent Wrench (Refined)", dark: <LogoWrenchB theme="dark" />, light: <LogoWrenchB theme="light" /> },
     { key: "pulse", name: "Concept 3: The Resolution Pulse", dark: <LogoPulse theme="dark" />, light: <LogoPulse theme="light" /> },
     { key: "scaffold", name: "Concept 4: The Geodesic Scaffold", dark: <LogoScaffold theme="dark" />, light: <LogoScaffold theme="light" /> },
     { key: "nut", name: "Concept 5: The Tactical Hex Nut", dark: <LogoNut theme="dark" />, light: <LogoNut theme="light" /> },

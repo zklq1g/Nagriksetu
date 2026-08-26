@@ -270,3 +270,53 @@ export function LogoLoop({ className = "", theme = "auto" }: LogoProps) {
 
 // Default export maps to LogoPatch (Concept 1)
 export const Logo = LogoPatch;
+
+// -------------------------------------------------------------
+// CONCEPT 2b: THE CRESCENT WRENCH — Refined Variant
+// Vibe: Precision instrument, not a cartoon handyman.
+// A clean crescent/adjustable wrench silhouette where the
+// handle contains a glowing circuit trace (data conduit),
+// making it feel like digital infrastructure maintenance.
+// -------------------------------------------------------------
+export function LogoWrenchB({ className = "", theme = "auto" }: LogoProps) {
+  return (
+    <svg width="160" height="32" viewBox="0 0 160 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Wrench Head (open crescent top) */}
+      <path
+        d="M8 9 C8 6.8 9.8 5 12 5 L16 5 C17.1 5 18 5.9 18 7 L18 8 C20.2 8 22 9.8 22 12 C22 14.2 20.2 16 18 16 L18 17 C18 18.1 17.1 19 16 19 L12 19 C9.8 19 8 17.2 8 15 Z"
+        className={getPinBaseClass(theme)}
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      {/* Inner jaw gap */}
+      <path
+        d="M11 9 L11 15"
+        className={getBracketsClass(theme)}
+        strokeWidth="1"
+        strokeLinecap="round"
+        strokeDasharray="1.5 1.5"
+      />
+      {/* Handle — slim rod going diagonally down-right */}
+      <path
+        d="M18 17 L27 26"
+        className={getTextClass(theme)}
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      {/* Circuit trace / data conduit running through the handle */}
+      <path
+        d="M18 17 L21.5 20.5"
+        className={getCheckmarkClass(theme)}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      {/* Node at trace end */}
+      <circle cx="21.5" cy="20.5" r="1.2" className={getHighlightClass(theme)} />
+
+      {/* Wordmark */}
+      <text x="36" y="21" className={`${getTextClass(theme)} font-mono`} fontFamily="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" fontSize="16" fontWeight="600" letterSpacing="0.5">
+        what<tspan className={getHighlightClass(theme)}>DA</tspan>fix
+      </text>
+    </svg>
+  );
+}

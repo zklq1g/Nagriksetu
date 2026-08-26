@@ -3,7 +3,7 @@
 import React, { use } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { LogoOriginal, LogoPatch, LogoWrench, LogoPulse, LogoScaffold, LogoNut, LogoLoop } from "@/components/ui/Logo";
+import { LogoOriginal, LogoPatch, LogoWrench, LogoWrenchB, LogoPulse, LogoScaffold, LogoNut, LogoLoop } from "@/components/ui/Logo";
 
 const logoMap: Record<string, { name: string; dark: React.ReactNode; light: React.ReactNode }> = {
   original: {
@@ -20,6 +20,11 @@ const logoMap: Record<string, { name: string; dark: React.ReactNode; light: Reac
     name: "Concept 2: The Tactical Wrench",
     dark: <LogoWrench theme="dark" className="w-64 h-auto" />,
     light: <LogoWrench theme="light" className="w-64 h-auto" />
+  },
+  wrenchb: {
+    name: "Concept 2b: The Crescent Wrench (Refined)",
+    dark: <LogoWrenchB theme="dark" className="w-64 h-auto" />,
+    light: <LogoWrenchB theme="light" className="w-64 h-auto" />
   },
   pulse: {
     name: "Concept 3: The Resolution Pulse",
