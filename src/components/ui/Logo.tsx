@@ -189,5 +189,84 @@ export function LogoOriginal({ className = "", theme = "auto" }: LogoProps) {
   );
 }
 
+// -------------------------------------------------------------
+// CONCEPT 4: THE GEODESIC SCAFFOLD
+// -------------------------------------------------------------
+export function LogoScaffold({ className = "", theme = "auto" }: LogoProps) {
+  return (
+    <svg width="170" height="32" viewBox="0 0 170 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Isometric Cube Scaffold */}
+      {/* Left face */}
+      <path d="M8 12 L14 8 L14 16 L8 20 Z" className={getBracketsClass(theme)} strokeWidth="1" strokeLinejoin="round" />
+      {/* Right face - dashed/broken */}
+      <path d="M14 8 L20 12 L20 20 L14 16" className={getBracketsClass(theme)} strokeWidth="1" strokeLinejoin="round" strokeDasharray="2 2" />
+      {/* Top face */}
+      <path d="M8 12 L14 8 L20 12 L14 16 Z" className={getBracketsClass(theme)} strokeWidth="1" strokeLinejoin="round" />
+      {/* Glowing rebuild beam (cyan edge) */}
+      <path d="M14 16 L20 20" className={getCheckmarkClass(theme)} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="20" cy="20" r="1.5" className={getHighlightClass(theme)} />
+
+      {/* Wordmark */}
+      <text x="36" y="21" className={`${getTextClass(theme)} font-mono`} fontFamily="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" fontSize="16" fontWeight="600" letterSpacing="0.5">
+        what<tspan className={getHighlightClass(theme)}>DA</tspan>fix
+      </text>
+    </svg>
+  );
+}
+
+// -------------------------------------------------------------
+// CONCEPT 5: THE TACTICAL HEX NUT
+// -------------------------------------------------------------
+export function LogoNut({ className = "", theme = "auto" }: LogoProps) {
+  return (
+    <svg width="160" height="32" viewBox="0 0 160 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Hexagonal Nut */}
+      <path 
+        d="M16 4 L26 10 L26 22 L16 28 L6 22 L6 10 Z" 
+        className={getPinBaseClass(theme)} 
+        strokeWidth="1.5" 
+        strokeLinejoin="round" 
+      />
+      {/* Circular Thread Center */}
+      <circle cx="16" cy="16" r="5" className={getBracketsClass(theme)} strokeWidth="1" strokeDasharray="2 1" />
+      {/* Glowing checkmark lock */}
+      <path 
+        d="M13 16 L15 18 L19 13" 
+        className={getCheckmarkClass(theme)} 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+      />
+
+      {/* Wordmark */}
+      <text x="36" y="21" className={`${getTextClass(theme)} font-mono`} fontFamily="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" fontSize="16" fontWeight="600" letterSpacing="0.5">
+        what<tspan className={getHighlightClass(theme)}>DA</tspan>fix
+      </text>
+    </svg>
+  );
+}
+
+// -------------------------------------------------------------
+// CONCEPT 6: THE RESOLUTION LOOP
+// -------------------------------------------------------------
+export function LogoLoop({ className = "", theme = "auto" }: LogoProps) {
+  return (
+    <svg width="160" height="32" viewBox="0 0 160 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Circular Loop path representing report -> resolution */}
+      {/* Muted segment (report) */}
+      <path d="M10 20 A 8 8 0 1 1 22 20" className={getMutedLineClass(theme)} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 2" />
+      {/* Glowing resolution segment */}
+      <path d="M22 20 A 8 8 0 0 1 10 20" className={getCheckmarkClass(theme)} strokeWidth="2.5" strokeLinecap="round" />
+      {/* Check arrow node */}
+      <path d="M8 18 L10 20 L13 16" className={getCheckmarkClass(theme)} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* Wordmark */}
+      <text x="36" y="21" className={`${getTextClass(theme)} font-mono`} fontFamily="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" fontSize="16" fontWeight="600" letterSpacing="0.5">
+        what<tspan className={getHighlightClass(theme)}>DA</tspan>fix
+      </text>
+    </svg>
+  );
+}
+
 // Default export maps to LogoPatch (Concept 1)
 export const Logo = LogoPatch;
