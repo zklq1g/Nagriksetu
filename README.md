@@ -5,6 +5,8 @@
 **Live Demo:** https://nagriksetu-nine.vercel.app/
 **GitHub:** https://github.com/zklq1g/Nagriksetu
 
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.svg)](https://nextjs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/) [![Gemini AI](https://img.shields.io/badge/Google-Gemini_AI-orange?logo=google)](https://ai.google.dev/) [![Supabase](https://img.shields.io/badge/Supabase-Database_%26_Auth-3ECF8E?logo=supabase)](https://supabase.com/)
+
 ---
 
 ## 📌 Problem Statement
