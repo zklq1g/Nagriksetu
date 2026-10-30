@@ -157,3 +157,10 @@ Built for [Hackathon Name] — 2024
 ## 📄 License
 
 MIT License
+
+
+---
+
+## 📜 Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, and version history.
