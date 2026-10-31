@@ -164,3 +164,12 @@ MIT License
 ## 📜 Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, and version history.
+
+---
+
+## 📚 Documentation & Technical Resources
+
+- **[Architecture & Technical Design](docs/ARCHITECTURE.md)**: Deep dive into the tri-portal domain model, Haversine formula geofencing, and hybrid storage topology.
+- **[Demo Walkthrough Script](docs/DEMO_SCRIPT.md)**: 3-minute golden path walkthrough script for hackathon presentations.
+- **[Hackathon Judge Guide](HACKATHON_README.md)**: Offline evaluation instructions and feature matrix.
+- **[Changelog](CHANGELOG.md)**: Daily iteration tracking and version release notes.

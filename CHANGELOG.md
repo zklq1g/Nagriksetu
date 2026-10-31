@@ -15,6 +15,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-10-31
+
+### Added
+- **Technical Architecture Specification**:
+  - Authored comprehensive `docs/ARCHITECTURE.md` documenting end-to-end incident lifecycle, domain models, and verification pipelines.
+  - Formulated detailed mathematical specifications for Haversine geofencing distance calculations ($R = 6,371,000\text{ m}$).
+  - Documented dual-tier persistence strategy comparing client-side `localDB` fallback with Supabase PostGIS `ST_DWithin` spatial indexing.
+  - Specified operator proof-of-work workflow and 100-meter proximity gatekeeper mechanics.
+
+### Changed
+- **Documentation & Navigation**:
+  - Expanded `README.md` documentation index to cross-link architecture specifications, demo scripts, and hackathon judge evaluation rubrics.
+  - Updated project references and version history for daily project milestones.
+
+---
+
 ## [1.2.0] - 2026-10-30
 
 ### Added
