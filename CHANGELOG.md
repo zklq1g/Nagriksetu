@@ -10,9 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- ServiceWorker offline-first caching for degraded network conditions in field operations.
 - Regional multilingual localization (Hindi, Marathi, Tamil, Bengali) for citizen intake.
 - Automated drone survey integration for peri-urban road network defect telemetry.
+- Push notification service integration for citizen ticket progress updates.
+
+---
+
+## [1.5.0] - 2026-11-02
+
+### Added
+- **Offline Field Operations & Background Sync Specification**:
+  - Authored comprehensive `docs/OFFLINE_FIELD_OPERATIONS.md` establishing the offline-first resilience architecture for municipal field operators in degraded connectivity zones.
+  - Formulated the client-side IndexedDB database schema (`NagrikSetuFieldCache_v1`) spanning `cached_assignments`, `offline_proofs`, and prioritized `sync_queue` object stores.
+  - Specified deterministic client-side Haversine geofencing calculations ($R = 6,371,000\text{ m}$) executed inside dedicated Web Workers with strict horizontal GPS accuracy gating ($\le 15\text{ m}$).
+  - Designed the cryptographic proof-of-work pipeline using the Web Crypto API (`SHA-256`) to guarantee tamper-proof before/after evidence integrity prior to network dispatch.
+  - Defined the ServiceWorker Background Sync protocol featuring exponential backoff, uniform random jitter, and server-side PostGIS spatial conflict reconciliation.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` to integrate `docs/OFFLINE_FIELD_OPERATIONS.md` into the primary technical documentation index.
+  - Refined the unreleased roadmap to reflect completion of the offline field caching specification.
 
 ---
 

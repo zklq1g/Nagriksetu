@@ -171,6 +171,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, 
 
 - **[Architecture & Technical Design](docs/ARCHITECTURE.md)**: Deep dive into the tri-portal domain model, Haversine formula geofencing, and hybrid storage topology.
 - **[API & Integration Specification](docs/API_SPECIFICATION.md)**: REST endpoint schemas, Gemini AI vision contracts, PostGIS spatial synchronization, and CPGRAMS government bridge protocol.
+- **[Offline Field Operations Specification](docs/OFFLINE_FIELD_OPERATIONS.md)**: Field operator offline resilience, IndexedDB caching schema, deterministic offline Haversine geofencing, and Background Sync protocol.
 - **[Demo Walkthrough Script](docs/DEMO_SCRIPT.md)**: 3-minute golden path walkthrough script for hackathon presentations.
 - **[Hackathon Judge Guide](HACKATHON_README.md)**: Offline evaluation instructions and feature matrix.
 - **[Changelog](CHANGELOG.md)**: Daily iteration tracking and version release notes.
