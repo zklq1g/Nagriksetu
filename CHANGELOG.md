@@ -10,8 +10,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Automated sync pipeline bridging local storage records with Supabase PostGIS spatial indices.
-- CPGRAMS ticket dispatch webhook integration.
+- ServiceWorker offline-first caching for degraded network conditions in field operations.
+- Regional multilingual localization (Hindi, Marathi, Tamil, Bengali) for citizen intake.
+- Automated drone survey integration for peri-urban road network defect telemetry.
+
+---
+
+## [1.4.0] - 2026-11-02
+
+### Added
+- **API & Integration Specification**:
+  - Authored comprehensive `docs/API_SPECIFICATION.md` detailing multi-modal vision contracts, spatial verification parameters, and government interoperability schemas.
+  - Formulated the exact request/response schemas for `/api/classify` utilizing Google Gemini 1.5/3.6 Flash.
+  - Specified the Supabase PostGIS cloud database schema, spatial indexes (`GIST`), and `ST_DWithin` proximity query contracts.
+  - Formalized the CPGRAMS (Centralised Public Grievance Redress and Monitoring System) outbound dispatch payload and ministry routing taxonomy (`MOHUA`, `MORTH`, `MOP`).
+  - Defined the Computer Vision Structural Similarity Index Measure (SSIM) proof-of-work resolution verification protocol with $\ge 90\%$ structural delta scoring.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` to integrate `docs/API_SPECIFICATION.md` into the primary technical documentation directory.
 
 ---
 
