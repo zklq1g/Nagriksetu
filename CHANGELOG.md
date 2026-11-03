@@ -10,9 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Regional multilingual localization (Hindi, Marathi, Tamil, Bengali) for citizen intake.
 - Automated drone survey integration for peri-urban road network defect telemetry.
 - Push notification service integration for citizen ticket progress updates.
+- Real-time IoT sensor telemetry bridge for municipal water pressure and storm drainage levels.
+
+---
+
+## [1.6.0] - 2026-11-03
+
+### Added
+- **Multilingual Localization & Accessibility Architecture**:
+  - Authored comprehensive `docs/LOCALIZATION_ACCESSIBILITY.md` establishing the 8th Schedule Indic language support matrix (Hindi, Marathi, Tamil, Bengali, Telugu, and Indian English).
+  - Specified the typed i18n data contract (`ICivicLocaleBundle`) with strict compile-time structural parity and cascading fallback resolution.
+  - Designed the vernacular voice-assisted citizen intake pipeline leveraging the Web Speech API (`webkitSpeechRecognition`) for hands-free roadside incident capture.
+  - Defined the vernacular keyword extraction matrix mapping localized colloquial grievance tokens (e.g., "खड्डा", "कचरा", "गटार", "குப்பை") to municipal department routing queues.
+  - Formalized WCAG 2.2 AAA accessibility compliance standards including $\ge 48\times 48\text{ px}$ touch target bounding geometry, sunlight-readable high-contrast luminance thresholds ($\ge 7.0:1$), and Devanagari/Dravidian typographic line-height dynamics.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` to integrate `docs/LOCALIZATION_ACCESSIBILITY.md` into the primary technical resources index.
+  - Refined the unreleased roadmap to reflect completion of the multilingual accessibility and vernacular speech intake specification.
 
 ---
 
