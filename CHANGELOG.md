@@ -10,9 +10,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Automated drone survey integration for peri-urban road network defect telemetry.
 - Push notification service integration for citizen ticket progress updates.
-- Real-time IoT sensor telemetry bridge for municipal water pressure and storm drainage levels.
+- Automated municipal contractor performance scorecard and penalty deduction engine.
+
+---
+
+## [1.7.0] - 2026-11-05
+
+### Added
+- **Municipal IoT Sensor Telemetry & Autonomous Drone Survey Specification**:
+  - Authored comprehensive `docs/IOT_DRONE_TELEMETRY.md` establishing proactive infrastructure monitoring via fixed edge sensor meshes and autonomous UAV photogrammetry.
+  - Formulated the MQTT v5.0 telemetry protocol and JSON message contracts (`IIoTSensorTelemetryPacket`) for storm drainage depth gauges, water distribution pressure transducers, and smart luminaire controllers.
+  - Specified the autonomous drone survey ingestion pipeline utilizing MAVLink v2.0, RTK-GNSS sub-decimeter georeferencing, and edge-inferred computer vision bounding polygons for road defect quantification (`IDroneFlightSurveyBatch`).
+  - Defined mathematical anomaly detection algorithms incorporating Exponentially Weighted Moving Average (EWMA) noise suppression ($\alpha = 0.20$), rate-of-change pressure burst triggers ($dP/dt \le -0.8\text{ bar/min}$), and volumetric pothole severity scoring.
+  - Established the spatial deduplication bridge correlating IoT/drone telemetry anomalies with citizen reports within the 50-meter Haversine radius ($R = 6,371,000\text{ m}$) to auto-synthesize verified municipal work orders.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` to integrate `docs/IOT_DRONE_TELEMETRY.md` into the primary technical documentation directory.
+  - Updated the unreleased roadmap to reflect the delivery of IoT sensor telemetry and automated drone survey specifications.
 
 ---
 

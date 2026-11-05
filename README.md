@@ -173,6 +173,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, 
 - **[API & Integration Specification](docs/API_SPECIFICATION.md)**: REST endpoint schemas, Gemini AI vision contracts, PostGIS spatial synchronization, and CPGRAMS government bridge protocol.
 - **[Offline Field Operations Specification](docs/OFFLINE_FIELD_OPERATIONS.md)**: Field operator offline resilience, IndexedDB caching schema, deterministic offline Haversine geofencing, and Background Sync protocol.
 - **[Multilingual Localization & Accessibility](docs/LOCALIZATION_ACCESSIBILITY.md)**: 8th Schedule Indic language support, voice-assisted intake (Web Speech API), dialectal keyword classification, and WCAG 2.2 AAA accessibility.
+- **[Municipal IoT & Drone Telemetry Specification](docs/IOT_DRONE_TELEMETRY.md)**: SCADA/MQTT storm drainage and water pressure telemetry, autonomous UAV orthomosaic defect sweeps, and 50m spatial correlation.
 - **[Demo Walkthrough Script](docs/DEMO_SCRIPT.md)**: 3-minute golden path walkthrough script for hackathon presentations.
 - **[Hackathon Judge Guide](HACKATHON_README.md)**: Offline evaluation instructions and feature matrix.
 - **[Changelog](CHANGELOG.md)**: Daily iteration tracking and version release notes.
