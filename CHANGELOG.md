@@ -11,7 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Push notification service integration for citizen ticket progress updates.
-- Automated municipal contractor performance scorecard and penalty deduction engine.
+- Automated civic bounty and gamified citizen volunteer rewards system.
+
+---
+
+## [1.8.0] - 2026-11-07
+
+### Added
+- **Automated Municipal Contractor Performance Scorecard & Penalty Deduction Engine**:
+  - Authored comprehensive `docs/CONTRACTOR_SLA_PENALTY_ENGINE.md` establishing autonomous SLA enforcement, multi-tier financial penalty compounding, and municipal treasury escrow holdback settlement.
+  - Specified the dynamic SLA matrix mapping civic defect categories and severity levels ($S \in \{1, 2, 3\}$) to strict resolution deadlines and base penalty rates ($P_0$).
+  - Formulated the non-linear daily penalty compounding function incorporating severity multipliers ($M_{\text{sev}}$), escalation exponent ($\gamma = 1.45$), acceleration coefficient ($\kappa = 0.25$), transit zone multipliers ($\Omega_{\text{zone}}$), and statutory liability caps ($0.25 \times V_{\text{work\_order}}$).
+  - Defined the 30-day rolling Contractor Performance Score ($CPS_c \in [0, 100]$) weighted algorithm spanning SLA adherence ($35\%$), SSIM computer vision verification delta ($25\%$), first-time fix rate ($20\%$), citizen satisfaction ($20\%$), and recurrent failure penalties.
+  - Authored typed TypeScript domain interfaces (`IContractorEntity`, `IWorkOrderSLA`, `IPenaltyDeductionRecord`, `IContractorScorecardSummary`) and implemented the deterministic penalty calculator.
+  - Established the electronic debit advice protocol for municipal Public Financial Management System (PFMS) escrow withholding and the 48-hour contractor dispute arbitration pipeline.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` to integrate `docs/CONTRACTOR_SLA_PENALTY_ENGINE.md` into the primary technical documentation and architecture reference index.
+  - Updated the unreleased roadmap to reflect delivery of the automated contractor performance scorecard and penalty deduction engine.
 
 ---
 
