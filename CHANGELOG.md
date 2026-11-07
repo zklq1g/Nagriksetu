@@ -11,7 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Push notification service integration for citizen ticket progress updates.
-- Automated civic bounty and gamified citizen volunteer rewards system.
+- Real-time WebSockets event broadcasting for municipal operations command center.
+
+---
+
+## [1.9.0] - 2026-11-07
+
+### Added
+- **Automated Civic Bounty, Micro-Incentives & Gamified Citizen Volunteer Protocol**:
+  - Authored comprehensive `docs/CIVIC_BOUNTY_REWARDS_SYSTEM.md` establishing algorithmic citizen karma valuation, dynamic micro-bounty escalation, and direct municipal incentive settlement.
+  - Specified the dynamic micro-bounty valuation formulation incorporating base bounty credits ($B_0 = 50$), AI severity multipliers ($M_{\text{sev}} \in \{1.0, 2.0, 4.0\}$), ward equity coefficients ($\lambda_{\text{ward}} \in [1.0, 2.5]$), and community upvote amplification ($\Phi_{\text{upvote}}$).
+  - Designed the pro-rata bounty staking distribution model splitting verified resolution pools across the primary reporter ($60\%$), validated community upvoters ($30\%$), and ward civic reserve ($10\%$).
+  - Established zero-trust Sybil resistance mechanisms: WebRTC live-stream hardware gating, high-accuracy GPS geofence attestation ($\le 25\text{m}$), Bayesian Citizen Trust Quotient ($TQ_c \in [0.10, 1.00]$), and token-bucket velocity limits.
+  - Defined the 4-tier civic reputation hierarchy spanning Nagrik Citizen, Ward Guardian, Civic Champion, and Nagrik Ratna (Mayor's Circle) with corresponding municipal privileges.
+  - Formulated the settlement integration with national digital public infrastructure including NPCI e-RUPI purpose-bound vouchers and National Common Mobility Card (NCMC) transit wallet top-ups.
+  - Provided complete production-ready TypeScript domain contracts (`ICivicBountyTicket`, `ICitizenKarmaProfile`, `IBountyDistributionResult`, `ISybilShieldAssessment`) and deterministic calculation engine (`CivicBountyEngine`).
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` technical resources to index `docs/CIVIC_BOUNTY_REWARDS_SYSTEM.md`.
+  - Updated the unreleased roadmap to reflect delivery of the automated civic bounty and gamified volunteer rewards system.
 
 ---
 

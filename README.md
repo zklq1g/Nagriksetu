@@ -175,6 +175,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, 
 - **[Multilingual Localization & Accessibility](docs/LOCALIZATION_ACCESSIBILITY.md)**: 8th Schedule Indic language support, voice-assisted intake (Web Speech API), dialectal keyword classification, and WCAG 2.2 AAA accessibility.
 - **[Municipal IoT & Drone Telemetry Specification](docs/IOT_DRONE_TELEMETRY.md)**: SCADA/MQTT storm drainage and water pressure telemetry, autonomous UAV orthomosaic defect sweeps, and 50m spatial correlation.
 - **[Contractor Performance & Penalty Engine](docs/CONTRACTOR_SLA_PENALTY_ENGINE.md)**: Automated SLA enforcement, non-linear compounding penalty deductions, 30-day Contractor Performance Scorecard (CPS), and PFMS escrow settlement.
+- **[Civic Bounty & Gamified Rewards Protocol](docs/CIVIC_BOUNTY_REWARDS_SYSTEM.md)**: Algorithmic citizen karma valuation, dynamic micro-bounty escalation, zero-trust Sybil resistance, and e-RUPI/NCMC municipal utility benefit settlement.
 - **[Demo Walkthrough Script](docs/DEMO_SCRIPT.md)**: 3-minute golden path walkthrough script for hackathon presentations.
 - **[Hackathon Judge Guide](HACKATHON_README.md)**: Offline evaluation instructions and feature matrix.
 - **[Changelog](CHANGELOG.md)**: Daily iteration tracking and version release notes.
