@@ -10,8 +10,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Push notification service integration for citizen ticket progress updates.
-- Real-time WebSockets event broadcasting for municipal operations command center.
+- WebPush and FCM push notification service integration for citizen ticket progress updates.
+- Edge AI on-device defect pre-classification utilizing WebAssembly TensorFlow.js.
+
+---
+
+## [1.10.0] - 2026-11-08
+
+### Added
+- **Municipal Operations Command Center & Real-Time WebSockets Event Broadcasting Protocol (MOCC-EBP)**:
+  - Authored comprehensive architectural specification `docs/COMMAND_CENTER_WEBSOCKETS_DISPATCH.md` establishing a sub-50ms low-latency reactive event pipeline across Citizen, Field Operator, and ICCC Command surfaces.
+  - Formulated the spatial Geohash and Quadkey channel multiplexing hierarchy (Levels 5 through 8) enabling dynamic viewport-bound subscriptions and eliminating irrelevant client-side data leaks.
+  - Specified canonical typed message envelopes (`INagrikEventEnvelope`) with monotonically increasing 64-bit sequence counters ($S_{C_i}$) for gapless stream recovery and high-water mark vector clocks.
+  - Engineered the distributed Redis Cluster pub/sub backplane and sliding 72-hour Redis Streams event buffer with gap delta recovery for mobile field units transitioning through offline zones.
+  - Implemented the algorithmic spatiotemporal DBSCAN emergency hazard clustering engine combining Haversine distance ($R_{\text{threshold}} = 100\text{m}$) and temporal sliding windows ($W = 15\text{m}$) to detect cascading compound hazards ($\chi_{\text{cluster}} \ge 8.5$).
+  - Integrated national and municipal data standards including India Urban Data Exchange (IUDX) NGSI-LD models and CPGRAMS OpenAPI XML/JSON grievance bridges.
+  - Provided production-ready TypeScript client and subscription management implementation (`RealtimeCommandCenterClient`, `ISpatialSubscriptionFilter`, `IEmergencyClusterPayload`).
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` technical resources to index `docs/COMMAND_CENTER_WEBSOCKETS_DISPATCH.md`.
+  - Updated the unreleased roadmap to reflect delivery of the real-time command center WebSockets event broadcasting protocol.
 
 ---
 
