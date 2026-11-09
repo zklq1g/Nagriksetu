@@ -178,6 +178,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, 
 - **[Civic Bounty & Gamified Rewards Protocol](docs/CIVIC_BOUNTY_REWARDS_SYSTEM.md)**: Algorithmic citizen karma valuation, dynamic micro-bounty escalation, zero-trust Sybil resistance, and e-RUPI/NCMC municipal utility benefit settlement.
 - **[Real-Time Command Center & WebSockets Dispatch Protocol](docs/COMMAND_CENTER_WEBSOCKETS_DISPATCH.md)**: Low-latency bidirectional WebSocket gateway, spatial Geohash channel multiplexing, distributed Redis Pub/Sub backplane, and autonomous municipal emergency dispatch.
 - **[Edge AI On-Device Classification & WASM Vision Pipeline](docs/EDGE_AI_ON_DEVICE_CLASSIFICATION.md)**: Sub-85ms client-side MobileNetV4-INT8 neural inference, WebAssembly SIMD/WebGPU acceleration, DPDP Act 2023 privacy sanitization, and dual-tier cloud consensus dispatch.
+- **[Voice Conversational AI IVR & Intake Engine](docs/VOICE_IVR_MULTIMODAL_INTAKE.md)**: Bidirectional WebRTC audio streaming, Gemini Live API integration, 12+ Indic language dialectal adapters, and automated telephonic CPGRAMS ticket dispatch.
 - **[Demo Walkthrough Script](docs/DEMO_SCRIPT.md)**: 3-minute golden path walkthrough script for hackathon presentations.
 - **[Hackathon Judge Guide](HACKATHON_README.md)**: Offline evaluation instructions and feature matrix.
 - **[Changelog](CHANGELOG.md)**: Daily iteration tracking and version release notes.

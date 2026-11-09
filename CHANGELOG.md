@@ -12,7 +12,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - WebPush and FCM push notification service integration for citizen ticket progress updates.
 - Municipal Spatial Digital Twin & 3D Building Information Modeling (BIM) asset overlay integration.
-- Voice-based conversational AI IVR citizen grievance intake agent powered by Gemini Live API.
+- Offline-first municipal store-and-forward sync with CRDT-based conflict-free resolution for disaster management zones.
+
+---
+
+## [1.12.0] - 2026-11-09
+
+### Added
+- **Voice-Based Conversational AI IVR & Multimodal Citizen Grievance Intake Engine (VCAI-IVR)**:
+  - Authored comprehensive architectural specification `docs/VOICE_IVR_MULTIMODAL_INTAKE.md` establishing low-latency telephonic and browser-based voice grievance reporting powered by Google Gemini Live API.
+  - Designed the bidirectional audio streaming pipeline over WebRTC / SIP FreeSWITCH gateway with 20ms Opus/PCM packetization and sub-420ms end-to-end turn latency.
+  - Developed Indic dialectal acoustic models supporting 12+ official Indian languages with in-flight code-mixed (Hinglish/Tanglish) dynamic switching and ambient traffic noise suppression ($\text{SNR} \ge 6\text{ dB}$).
+  - Formulated the continuous Acoustic Urgency Index ($\mathcal{U}_{\text{acoustic}}$) evaluating pitch variance ($F_{0,\text{mean}}$), dynamic range RMS ratio, and articulation tempo, unified with semantic hazard keywords ($\mathcal{S}_{\text{voice}}$).
+  - Built the Spatiotemporal Landmark Disambiguation engine querying municipal GIS gazetteers with Jaro-Winkler morphological distance, semantic embedding similarity, and ward Bayesian priors to resolve colloquial vernacular landmarks.
+  - Authored production-ready TypeScript domain models and deterministic synthesis engine (`VoiceGrievanceEngine`, `ICallerIdentity`, `IGrievanceExtractedSlots`, `ITelephonyTicketDraft`, `IGISGazetteerEntry`).
+  - Specified statutory compliance and privacy guardrails adhering to India's DPDP Act 2023, automated CLI phone number hashing, transient audio buffer purging, and bi-directional CPGRAMS OpenAPI synchronization.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` technical documentation directory to index `docs/VOICE_IVR_MULTIMODAL_INTAKE.md`.
+  - Updated the unreleased roadmap to reflect completion of the voice-based conversational AI IVR citizen grievance intake agent.
 
 ---
 
