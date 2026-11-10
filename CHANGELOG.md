@@ -11,8 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - WebPush and FCM push notification service integration for citizen ticket progress updates.
-- Municipal Spatial Digital Twin & 3D Building Information Modeling (BIM) asset overlay integration.
 - Offline-first municipal store-and-forward sync with CRDT-based conflict-free resolution for disaster management zones.
+- Autonomous Drone Orthomosaic Volumetric Photogrammetry for Monsoon Flood Damage Assessment.
+
+---
+
+## [1.13.0] - 2026-11-10
+
+### Added
+- **Municipal Spatial Digital Twin & 3D Building Information Modeling (BIM) Asset Overlay Engine (MSDT-BIM)**:
+  - Authored comprehensive architectural specification `docs/SPATIAL_DIGITAL_TWIN_BIM_OVERLAY.md` establishing subterranean infrastructure defect mapping, 3D utility collision prevention, and PM Gati Shakti National Master Plan GIS alignment.
+  - Specified OGC 3D Tiles 1.1 hierarchical bounding volume trees and IFC 4.3 / CityGML 3.0 asset pipelines for streaming multi-tier Level of Detail (LoD 1 to LoD 4) municipal utility geometries.
+  - Formulated the 3D Subsurface Proximity & Clearance Cone formulation evaluating Euclidean 3D perpendicular distances to underground power, gas, water, and telecom conduits with dynamic voltage and pressure scaling.
+  - Formulated the Volumetric Excavation Risk Score ($\mathcal{R}_{\text{excavation}} \in [0, 100]$) weighted by ASCE 38-02 Subsurface Utility Engineering (SUE) Quality Levels (QL-A to QL-D) to mandate non-destructive vacuum excavation test holes for high-hazard corridors.
+  - Authored production-ready TypeScript domain models and deterministic safety calculation engine (`SpatialDigitalTwinEngine`, `ISubsurfaceConduit`, `IExcavationHazardAssessment`, `I3DTileBoundingVolume`).
+  - Specified critical national infrastructure protection and privacy guardrails adhering to India's DPDP Act 2023 and NCIIPC directives, restricting subterranean layers to Level-3 authenticated municipal engineers and redacting classified conduits.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` technical documentation directory to index `docs/SPATIAL_DIGITAL_TWIN_BIM_OVERLAY.md`.
+  - Updated the unreleased roadmap to reflect delivery of the Municipal Spatial Digital Twin and 3D BIM asset overlay engine.
 
 ---
 
