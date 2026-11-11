@@ -12,7 +12,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - WebPush and FCM push notification service integration for citizen ticket progress updates.
 - Offline-first municipal store-and-forward sync with CRDT-based conflict-free resolution for disaster management zones.
-- Autonomous Drone Orthomosaic Volumetric Photogrammetry for Monsoon Flood Damage Assessment.
+- Real-time Edge AI Acoustic Transformer for Urban Pipelength Burst and Gas Leakage Localization.
+
+---
+
+## [1.14.0] - 2026-11-12
+
+### Added
+- **Autonomous Drone Orthomosaic Volumetric Photogrammetry & Monsoon Flood Hydrological Damage Assessment (ADOP-FDA)**:
+  - Authored comprehensive architectural specification `docs/DRONE_ORTHOMOSAIC_FLOOD_ASSESSMENT.md` establishing real-time UAV nadir photogrammetry, Structure-from-Motion (SfM) volumetric water pooling calculation, and hydrodynamic urban inundation modeling.
+  - Formulated the high-resolution Ground Sampling Distance (GSD) calibration and epipolar camera triangulation model delivering sub-2.5cm/pixel resolution under monsoon cloud ceilings (<120m AGL).
+  - Specified the dual-mesh Digital Surface Model (DSM) and Digital Terrain Model (DTM) differential elevation slicing pipeline ($\Delta z = z_{\text{DSM}} - z_{\text{DTM}}$) coupled with modified Normalized Difference Water Index (mNDWI) green/NIR multispectral segmentation.
+  - Engineered the Volumetric Inundation Integration formulation ($\mathcal{V}_{\text{flood}} = \iint \max(0, h_{\text{water}}(x, y) - z_{\text{terrain}}(x, y)) \, dx \, dy$) and Manning-Strickler open-channel runoff velocity equation ($v = \frac{1}{n} R_h^{2/3} S_0^{1/2}$) to quantify street discharge rates ($Q = v \cdot A$).
+  - Developed the Critical Inundation Risk Score ($\mathcal{R}_{\text{flood}} \in [0, 100]$) dynamically factoring flood water depth, submergence velocity, critical substation/hospital proximity, and arterial transit disruption.
+  - Authored production-ready TypeScript domain models and deterministic analytical engine (`DroneFloodPhotogrammetryEngine`, `IDroneSurveyMission`, `IVolumetricWaterBody`, `IHydrologicalInundationAssessment`, `IEvacuationCorridor`).
+  - Specified statutory airspace compliance adhering to India's **Drone Rules 2021** (DigitalSky NPNT handshake, Green Zone automated flight authorizations) and Section 8 privacy masking under the **DPDP Act 2023**.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` technical documentation directory to index `docs/DRONE_ORTHOMOSAIC_FLOOD_ASSESSMENT.md`.
+  - Updated the unreleased roadmap to reflect delivery of the autonomous drone orthomosaic volumetric photogrammetry engine.
 
 ---
 
