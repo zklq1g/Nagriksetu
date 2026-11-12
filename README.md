@@ -181,6 +181,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, 
 - **[Voice Conversational AI IVR & Intake Engine](docs/VOICE_IVR_MULTIMODAL_INTAKE.md)**: Bidirectional WebRTC audio streaming, Gemini Live API integration, 12+ Indic language dialectal adapters, and automated telephonic CPGRAMS ticket dispatch.
 - **[Municipal Spatial Digital Twin & 3D BIM Overlay](docs/SPATIAL_DIGITAL_TWIN_BIM_OVERLAY.md)**: 3D subterranean utility mapping, IFC 4.3 / CityGML 3.0 volumetric visualization, ASCE 38-02 excavation clearance zones, and PM Gati Shakti GIS alignment.
 - **[Autonomous Drone Orthomosaic Flood Assessment](docs/DRONE_ORTHOMOSAIC_FLOOD_ASSESSMENT.md)**: Sub-2.5cm UAV photogrammetry, Structure-from-Motion (SfM) volumetric water pooling, Manning-Strickler hydrodynamic modeling, and DigitalSky Drone Rules 2021 compliance.
+- **[Real-Time Edge AI Acoustic Transformer for Pipeline Leak Localization](docs/ACOUSTIC_TRANSFORMER_PIPELINE_LEAK_LOCALIZATION.md)**: Piezoelectric/hydrophone sensing, Korteweg-Joukowsky waveguide velocity, GCC-PHAT TDOA spatial pinpointing, and automated SCADA isolation.
 - **[Demo Walkthrough Script](docs/DEMO_SCRIPT.md)**: 3-minute golden path walkthrough script for hackathon presentations.
 - **[Hackathon Judge Guide](HACKATHON_README.md)**: Offline evaluation instructions and feature matrix.
 - **[Changelog](CHANGELOG.md)**: Daily iteration tracking and version release notes.
