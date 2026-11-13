@@ -12,7 +12,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 - WebPush and FCM push notification service integration for citizen ticket progress updates.
 - Offline-first municipal store-and-forward sync with CRDT-based conflict-free resolution for disaster management zones.
-- Autonomous AI-guided thermal imaging pipeline for subterranean electrical conduit fault localization.
+- Cross-agency unified incident dispatch bus with Open311 / CPGRAMS bidirectional telemetry.
+
+---
+
+## [1.16.0] - 2026-11-13
+
+### Added
+- **Autonomous AI-Guided Radiometric Thermal Computer Vision for Subterranean Electrical Conduit & Transformer Hotspot Fault Localization (ARTI-ECF)**:
+  - Authored comprehensive architectural specification `docs/RADIOMETRIC_THERMAL_ELECTRICAL_FAULT_LOCALIZATION.md` establishing real-time aerial UAV and vehicular Long-Wave Infrared (LWIR 8–14 μm) thermography, edge neural defect classification, and DISCOM SCADA integration.
+  - Formulated the Stefan-Boltzmann Planck inversion equation integrating surface emissivity ($\varepsilon$), reflected ambient temperature ($T_{\text{refl}}$), and dynamic relative humidity atmospheric transmittance ($\tau_{\text{atm}}(d, \text{RH})$).
+  - Derived steady-state subterranean Fourier heat diffusion inversion model evaluating pavement surface Gaussian thermal plumes ($\Delta T(x) = \frac{q_{\text{loss}}}{\pi k_{\text{soil}}} \frac{z_0}{x^2 + z_0^2}$) to estimate underground cable core conductor temperatures ($T_{\text{core}}$) and localized Joule dissipation ($I^2 R$).
+  - Implemented NETA MTS-2023 Table 100.18 and IEEE 738 thermal gradient severity rating hierarchy (Class 1 Minor to Class 4 Critical / Emergency).
+  - Formulated the Subterranean Electrical Composite Thermal Risk Score ($\mathcal{R}_{\text{thermal}} \in [0, 100]$) weighted by surface temperature delta ($\Delta T$), XLPE $90^\circ\text{C}$ dielectric damage exceedance, feeder line voltage ($11\text{ kV} / 33\text{ kV}$), and high-density pedestrian corridor proximity.
+  - Authored production-ready TypeScript domain engine and analytical reference library `src/lib/thermalFaultLocalization.ts` implementing `RadiometricThermalFaultEngine`, `IElectricalAssetMetadata`, `IRadiometricSensorReading`, and `IThermalHotspotLocalizationResult`.
+  - Specified statutory compliance adhering to the Central Electricity Authority (Safety and Electric Supply) Regulations 2023, IS 7098 (Part 2) / IEC 60502 standards, and automated DPDP Act 2023 thermal privacy redaction.
+
+### Changed
+- **Documentation Indexing**:
+  - Updated `README.md` technical documentation directory to index `docs/RADIOMETRIC_THERMAL_ELECTRICAL_FAULT_LOCALIZATION.md`.
+  - Updated the unreleased roadmap to reflect completion of the autonomous radiometric thermal computer vision electrical fault localization engine.
 
 ---
 
