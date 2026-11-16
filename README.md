@@ -183,6 +183,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for daily release notes, feature iterations, 
 - **[Autonomous Drone Orthomosaic Flood Assessment](docs/DRONE_ORTHOMOSAIC_FLOOD_ASSESSMENT.md)**: Sub-2.5cm UAV photogrammetry, Structure-from-Motion (SfM) volumetric water pooling, Manning-Strickler hydrodynamic modeling, and DigitalSky Drone Rules 2021 compliance.
 - **[Real-Time Edge AI Acoustic Transformer for Pipeline Leak Localization](docs/ACOUSTIC_TRANSFORMER_PIPELINE_LEAK_LOCALIZATION.md)**: Piezoelectric/hydrophone sensing, Korteweg-Joukowsky waveguide velocity, GCC-PHAT TDOA spatial pinpointing, and automated SCADA isolation.
 - **[Autonomous AI Radiometric Thermal Computer Vision for Electrical Fault Localization](docs/RADIOMETRIC_THERMAL_ELECTRICAL_FAULT_LOCALIZATION.md)**: Radiometric LWIR thermography, Stefan-Boltzmann Planck inversion, Fourier subterranean heat diffusion modeling, NETA MTS-2023 classification, and DISCOM SCADA integration.
+- **[Autonomous Offline-First CRDT Municipal State Synchronization & Disaster Zone Mesh](docs/CRDT_DISASTER_MESH_STATE_SYNCHRONIZATION.md)**: State-based CvRDT semi-lattice join semantics, OR-Set, LWW-Register, Merkle-DAG anti-entropy sync, and store-and-carry-and-forward mesh routing.
 - **[Demo Walkthrough Script](docs/DEMO_SCRIPT.md)**: 3-minute golden path walkthrough script for hackathon presentations.
 - **[Hackathon Judge Guide](HACKATHON_README.md)**: Offline evaluation instructions and feature matrix.
 - **[Changelog](CHANGELOG.md)**: Daily iteration tracking and version release notes.
